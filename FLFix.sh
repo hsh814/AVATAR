@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # The path of containing Defects4J bugs.
-d4jData=/work/users/kliu/Defects4JData/
+d4jData=/root/project/AVATAR/buggy/
 
 # The path of Defects4J git repository.
-d4jPath=/work/users/kliu/SearchAPR/defects4j/
+d4jPath=/root/project/defects4j/
 
 # The fault localization metric used to calculate suspiciousness value of each code line.
 metric=Ochiai
