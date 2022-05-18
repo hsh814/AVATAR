@@ -12,6 +12,8 @@ public class Patch {
 	private String fixedCodeStr1 = "";
 	private String fixedCodeStr2 = "";
 	private int buggyCodeStartPos = -1;
+	public String mutation = "";
+	public int patchId = -1;
 	/*
 	 * if (buggyCodeEndPos == buggyCodeStartPos) then
 	 * 		replace buggyCodeStr with fixedCodeStr1;

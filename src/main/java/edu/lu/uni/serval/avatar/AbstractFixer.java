@@ -27,6 +27,9 @@ import edu.lu.uni.serval.utils.SuspiciousCodeParser;
 import edu.lu.uni.serval.utils.SuspiciousPosition;
 import edu.lu.uni.serval.utils.TestUtils;
 
+import org.json.JSONObject;
+import org.json.JSONArray;
+
 /**
  * Abstract Fixer.
  * 
@@ -224,15 +227,23 @@ public abstract class AbstractFixer implements IFixer {
 
 	protected List<Patch> triedPatchCandidates = new ArrayList<>();
 	
-	protected void testGeneratedPatches(List<Patch> patchCandidates, SuspCodeNode scn) {
-		// Testing generated patches.
-		for (Patch patch : patchCandidates) {
+    protected void testGeneratedPatches(List<Patch> patchCandidates, SuspCodeNode scn) {
+        // Testing generated patches.
+        for (Patch patch : patchCandidates) {
 			patch.buggyFileName = scn.suspiciousJavaFile;
 			if (this.triedPatchCandidates.contains(patch)) continue;
-			
+            patch.patchId = patchId;
 			patchId++;
 			
-			addPatchCodeToFile(scn, patch);// Insert the patch.
+            addPatchCodeToFile(scn, patch);// Insert the patch.
+            
+            JSONObject jo = new JSONObject();
+            jo.put("patch_id", patch.patchId);
+            jo.put("buggy_file", patch.buggyFileName);
+            jo.put("buggy_code", patch.getBuggyCodeStr());
+            jo.put("patch_code", patch.getFixedCodeStr1());
+            // jo.put("buggy_line", patch.get)
+
 			String buggyCode = patch.getBuggyCodeStr();
 			if ("===StringIndexOutOfBoundsException===".equals(buggyCode)) continue;
 			String patchCode = patch.getFixedCodeStr1();
@@ -430,6 +441,7 @@ public abstract class AbstractFixer implements IFixer {
 	
 	class SuspCodeNode {
 
+        public String projectId;
 		public File javaBackup;
 		public File classBackup;
 		public File targetJavaFile;

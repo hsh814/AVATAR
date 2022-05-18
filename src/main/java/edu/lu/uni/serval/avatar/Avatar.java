@@ -63,7 +63,7 @@ public class Avatar extends AbstractFixer {
 		for (SuspiciousPosition suspiciousCode : suspiciousCodeList) {
 			SuspCodeNode scn = parseSuspiciousCode(suspiciousCode);
 			if (scn == null) continue;
-
+            scn.projectId = this.buggyProject;
 //			log.debug(scn.suspCodeStr);
 			if (triedSuspNode.contains(scn)) continue;
 			triedSuspNode.add(scn);
