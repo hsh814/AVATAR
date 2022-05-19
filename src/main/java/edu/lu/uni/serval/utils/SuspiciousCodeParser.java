@@ -34,6 +34,7 @@ public class SuspiciousCodeParser {
 		unit = new MyUnit().createCompilationUnit(javaFile);
 		ITree rootTree = new ASTGenerator().generateTreeForJavaFile(javaFile, TokenType.EXP_JDT);
 		identifySuspiciousCodeAst(rootTree, suspLineNum);
+		identifySuspiciousMethodAst(rootTree, suspLineNum);
 	}
 
 	public void parseSuspiciousMethod(File javaFile, int buggyLine) {
@@ -87,6 +88,7 @@ public class SuspiciousCodeParser {
 					buggyMethod.classPath = this.javaFile.getPath();
 					buggyMethod.startLine = startLine;
 					buggyMethod.endLine = endLine;
+					buggyMethod.methodName = child.getLabel();
 					break;
 				} else {
 					identifySuspiciousMethodAst(child, buggyLine);
@@ -138,7 +140,7 @@ public class SuspiciousCodeParser {
 
 	public class BuggyMethod {
 		public String classPath;
-//		public String methodName;
+		public String methodName;
 		public int startLine;
 		public int endLine;
 	}

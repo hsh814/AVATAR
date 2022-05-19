@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -26,6 +28,7 @@ import edu.lu.uni.serval.utils.ShellUtils;
 import edu.lu.uni.serval.utils.SuspiciousCodeParser;
 import edu.lu.uni.serval.utils.SuspiciousPosition;
 import edu.lu.uni.serval.utils.TestUtils;
+import edu.lu.uni.serval.utils.SuspiciousCodeParser.BuggyMethod;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -64,32 +67,35 @@ public abstract class AbstractFixer implements IFixer {
 	public String dataType = "";
     protected int patchId = 0;
     public JSONObject jsonObject = new JSONObject();
+    public HashMap<String, HashMap<Integer, ArrayList<JSONObject>>> rules = new HashMap<>();
+    public HashMap<String, SuspCodeNode> lineMap = new HashMap<>();
 //	private TimeLine timeLine;
 	
 	public AbstractFixer(String path, String projectName, int bugId, String defects4jPath) {
 		this.path = path;
 		this.buggyProject = projectName + "_" + bugId;
 		fullBuggyProjectPath = path + buggyProject;
-		this.defects4jPath = defects4jPath;
+        this.defects4jPath = defects4jPath;
+        minErrorTest = 1;
 //		int compileResult = TestUtils.compileProjectWithDefects4j(fullBuggyProjectPath, this.defects4jPath);
 //      if (compileResult == 1) {
 //      	log.debug(buggyProject + " ---Fixer: fix fail because of compile fail! ");
 //      }
-		if (FileHelper.getAllFiles(path + buggyProject + PathUtils.getSrcPath(buggyProject).get(0), ".class").isEmpty()) {
-			TestUtils.compileProjectWithDefects4j(path + buggyProject, defects4jPath);
-		}
-		minErrorTest = TestUtils.getFailTestNumInProject(path + buggyProject, defects4jPath, failedTestStrList);
-		if (minErrorTest == Integer.MAX_VALUE) {
-			TestUtils.compileProjectWithDefects4j(path + buggyProject, defects4jPath);
-			minErrorTest = TestUtils.getFailTestNumInProject(path + buggyProject, defects4jPath, failedTestStrList);
-		}
-		log.info(buggyProject + " Failed Tests: " + this.minErrorTest);
+		// if (FileHelper.getAllFiles(path + buggyProject + PathUtils.getSrcPath(buggyProject).get(0), ".class").isEmpty()) {
+		// 	TestUtils.compileProjectWithDefects4j(path + buggyProject, defects4jPath);
+		// }
+		// minErrorTest = TestUtils.getFailTestNumInProject(path + buggyProject, defects4jPath, failedTestStrList);
+		// if (minErrorTest == Integer.MAX_VALUE) {
+		// 	TestUtils.compileProjectWithDefects4j(path + buggyProject, defects4jPath);
+		// 	minErrorTest = TestUtils.getFailTestNumInProject(path + buggyProject, defects4jPath, failedTestStrList);
+		// }
+		// log.info(buggyProject + " Failed Tests: " + this.minErrorTest);
 		
 		// Read paths of the buggy project.
 		this.dp = new DataPreparer(path);
 		dp.prepareData(buggyProject);
 		
-		readPreviouslyFailedTestCases();
+		// readPreviouslyFailedTestCases();
 	}
 
 	public AbstractFixer(String path, String metric, String projectName, int bugId, String defects4jPath) {
@@ -224,36 +230,40 @@ public abstract class AbstractFixer implements IFixer {
 		}
         
         SuspCodeNode scn = new SuspCodeNode(javaBackup, classBackup, targetJavaFile, targetClassFile, 
-        		startPos, endPos, suspCodeAstNode, suspCodeStr, suspiciousJavaFile, buggyLine);
+                startPos, endPos, suspCodeAstNode, suspCodeStr, suspiciousJavaFile, buggyLine);
+        scn.buggyMethod = scp.getBuggMethod();
         return scn;
 	}
 
 	protected List<Patch> triedPatchCandidates = new ArrayList<>();
 	
     protected void testGeneratedPatches(List<Patch> patchCandidates, SuspCodeNode scn) {
+        if (!lineMap.containsKey(scn.suspiciousJavaFile + ":" + scn.buggyLine)) {
+            lineMap.put(scn.suspiciousJavaFile + ":" + scn.buggyLine, scn);
+        }
+        if (!rules.containsKey(scn.suspiciousJavaFile)) {
+            rules.put(scn.suspiciousJavaFile, new HashMap<Integer, ArrayList<JSONObject>>());
+        }
+        HashMap<Integer, ArrayList<JSONObject>> fileInfo = rules.get(scn.suspiciousJavaFile);
+        if (!fileInfo.containsKey(scn.buggyLine)) {
+            fileInfo.put(scn.buggyLine, new ArrayList<JSONObject>());
+        }
+        ArrayList<JSONObject> lineInfo = fileInfo.get(scn.buggyLine);
+
         String mutation = patchCandidates.get(0).mutation;
         String tmpFileName = "d4j/" + scn.projectId + "/" + scn.flScoreRank + "/" + mutation + "/";
-        JSONObject obj = new JSONObject();
-        JSONArray ja = new JSONArray();
-        obj.put("mutation", mutation);
-        obj.put("line", scn.buggyLine);
-        obj.put("oldcode", scn.suspCodeStr);
-        obj.put("file", scn.suspiciousJavaFile);
-        JSONObject mutObj = new JSONObject();
-        mutObj.put("mutation", mutation);
+
         // Testing generated patches.
         for (Patch patch : patchCandidates) {
-			patch.buggyFileName = scn.suspiciousJavaFile;
-			if (this.triedPatchCandidates.contains(patch)) continue;
+            patch.buggyFileName = scn.suspiciousJavaFile;
+            if (this.triedPatchCandidates.contains(patch))
+                continue;
             patch.patchId = patchId;
-			patchId++;
+            patchId++;
             String patchLoc = tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName();
             addPatchCodeToFile(scn, patch, patchLoc);// Insert the patch.
-            
 
-            
-
-			String buggyCode = patch.getBuggyCodeStr();
+            String buggyCode = patch.getBuggyCodeStr();
             if ("===StringIndexOutOfBoundsException===".equals(buggyCode))
                 continue;
             JSONObject jo = new JSONObject();
@@ -261,120 +271,187 @@ public abstract class AbstractFixer implements IFixer {
             jo.put("buggy_code", patch.getBuggyCodeStr());
             jo.put("patch_code", patch.getFixedCodeStr1());
             jo.put("location", patchLoc);
-            ja.put(jo);
+            jo.put("mutation", patch.mutation);
+            lineInfo.add(jo);
             /*
-			String patchCode = patch.getFixedCodeStr1();
+            String patchCode = patch.getFixedCodeStr1();
             scn.targetClassFile.delete();
-
-			log.debug("Compiling");
-			try {// Compile patched file.
-				ShellUtils.shellRun(Arrays.asList("javac -Xlint:unchecked -source 1.7 -target 1.7 -cp "
-						+ PathUtils.buildCompileClassPath(Arrays.asList(PathUtils.getJunitPath()), dp.classPath, dp.testClassPath)
-						+ " -d " + dp.classPath + " " + scn.targetJavaFile.getAbsolutePath()), buggyProject);
-			} catch (IOException e) {
-				log.debug(buggyProject + " ---Fixer: fix fail because of javac exception! ");
-				continue;
-			}
-			if (!scn.targetClassFile.exists()) { // fail to compile
-				int results = (this.buggyProject.startsWith("Closure") || this.buggyProject.startsWith("Time") || this.buggyProject.startsWith("Mockito")) ? TestUtils.compileProjectWithDefects4j(fullBuggyProjectPath, defects4jPath) : 1;
-				if (results == 1) {
-					log.debug(buggyProject + " ---Fixer: fix fail because of failed compiling! ");
-					continue;
-				}
-			}
-			log.debug("Finish of compiling.");
-			
-			log.debug("Test previously failed test cases.");
-			try {
-				String results = ShellUtils.shellRun(Arrays.asList("java -cp "
-						+ PathUtils.buildTestClassPath(dp.classPath, dp.testClassPath)
-						+ " org.junit.runner.JUnitCore " + this.failedTestCaseClasses), buggyProject);
-
-				if (results.isEmpty()) {
-					System.err.println(scn.suspiciousJavaFile + "@" + scn.buggyLine);
-					System.err.println("Bug: " + buggyCode);
-					System.err.println("Patch: " + patchCode);
-					continue;
-				} else {
-					if (!results.contains("java.lang.NoClassDefFoundError")) {
-						List<String> tempFailedTestCases = readTestResults(results);
-						tempFailedTestCases.retainAll(this.fakeFailedTestCasesList);
-						if (!tempFailedTestCases.isEmpty()) {
-							if (this.failedTestCasesStrList.size() == 1) continue;
-
-							// Might be partially fixed.
-							tempFailedTestCases.removeAll(this.failedTestCasesStrList);
-							if (!tempFailedTestCases.isEmpty()) continue; // Generate new bugs.
-						}
-					}
-				}
-			} catch (IOException e) {
-				log.debug(buggyProject + " ---Fixer: fix fail because of faile passing previously failed test cases! ");
-				continue;
-			}
-
-			List<String> failedTestsAfterFix = new ArrayList<>();
-			int errorTestAfterFix = TestUtils.getFailTestNumInProject(fullBuggyProjectPath, this.defects4jPath,
-					failedTestsAfterFix);
-			failedTestsAfterFix.removeAll(this.fakeFailedTestCasesList);
-			
-			if (errorTestAfterFix < minErrorTest) {
-				List<String> tmpFailedTestsAfterFix = new ArrayList<>();
-				tmpFailedTestsAfterFix.addAll(failedTestsAfterFix);
-				tmpFailedTestsAfterFix.removeAll(this.failedTestStrList);
-				if (tmpFailedTestsAfterFix.size() > 0) { // Generate new bugs.
-					log.debug(buggyProject + " ---Generated new bugs: " + tmpFailedTestsAfterFix.size());
-					continue;
-				}
-				
-				// Output the generated patch.
-				if (errorTestAfterFix == 0 || failedTestsAfterFix.isEmpty()) {
-					fixedStatus = 1;
-					log.info("Succeeded to fix the bug " + buggyProject + "====================");
-					String patchStr = TestUtils.readPatch(this.fullBuggyProjectPath);
-					if (patchStr == null || !patchStr.startsWith("diff")) {
-						FileHelper.outputToFile(Configuration.outputPath + "FixedBugs/" + buggyProject + "/Patch_" + patchId + ".txt",
-								"//**********************************************************\n//" + scn.suspiciousJavaFile + " ------ " + scn.buggyLine
-								+ "\n//**********************************************************\n"
-								+ "===Buggy Code===\n" + buggyCode + "\n\n===Patch Code===\n" + patchCode, false);
-					} else {
-						FileHelper.outputToFile(Configuration.outputPath + "FixedBugs/" + buggyProject + "/Patch_" + patchId + ".txt", patchStr + "\n", false);
-					}
-					this.minErrorTest = 0;
-					break;
-				} else {
-					if (minErrorTestAfterFix == 0 || errorTestAfterFix <= minErrorTestAfterFix) {
-						minErrorTestAfterFix = errorTestAfterFix;
-						if (fixedStatus != 1) fixedStatus = 2;
-						log.info("Partially Succeeded to fix the bug " + buggyProject + "====================");
-						String patchStr = TestUtils.readPatch(this.fullBuggyProjectPath);
-						if (patchStr == null || !patchStr.startsWith("diff")) {
-							FileHelper.outputToFile(Configuration.outputPath + "PartiallyFixedBugs/" + buggyProject + "/Patch_" + patchId + ".txt",
-									"//**********************************************************\n//" + scn.suspiciousJavaFile + " ------ " + scn.buggyLine
-									+ "\n//**********************************************************\n"
-									+ "===Buggy Code===\n" + buggyCode + "\n\n===Patch Code===\n" + patchCode, false);
-						} else {
-							FileHelper.outputToFile(Configuration.outputPath + "PartiallyFixedBugs/" + buggyProject + "/Patch_" + patchId + ".txt", patchStr + "\n", false);
-						}
-					}
-				}
-			} else {
-				log.debug("Failed Tests after fixing: " + errorTestAfterFix + " " + buggyProject);
-			}
+            
+            log.debug("Compiling");
+            try {// Compile patched file.
+            	ShellUtils.shellRun(Arrays.asList("javac -Xlint:unchecked -source 1.7 -target 1.7 -cp "
+            			+ PathUtils.buildCompileClassPath(Arrays.asList(PathUtils.getJunitPath()), dp.classPath, dp.testClassPath)
+            			+ " -d " + dp.classPath + " " + scn.targetJavaFile.getAbsolutePath()), buggyProject);
+            } catch (IOException e) {
+            	log.debug(buggyProject + " ---Fixer: fix fail because of javac exception! ");
+            	continue;
+            }
+            if (!scn.targetClassFile.exists()) { // fail to compile
+            	int results = (this.buggyProject.startsWith("Closure") || this.buggyProject.startsWith("Time") || this.buggyProject.startsWith("Mockito")) ? TestUtils.compileProjectWithDefects4j(fullBuggyProjectPath, defects4jPath) : 1;
+            	if (results == 1) {
+            		log.debug(buggyProject + " ---Fixer: fix fail because of failed compiling! ");
+            		continue;
+            	}
+            }
+            log.debug("Finish of compiling.");
+            
+            log.debug("Test previously failed test cases.");
+            try {
+            	String results = ShellUtils.shellRun(Arrays.asList("java -cp "
+            			+ PathUtils.buildTestClassPath(dp.classPath, dp.testClassPath)
+            			+ " org.junit.runner.JUnitCore " + this.failedTestCaseClasses), buggyProject);
+            
+            	if (results.isEmpty()) {
+            		System.err.println(scn.suspiciousJavaFile + "@" + scn.buggyLine);
+            		System.err.println("Bug: " + buggyCode);
+            		System.err.println("Patch: " + patchCode);
+            		continue;
+            	} else {
+            		if (!results.contains("java.lang.NoClassDefFoundError")) {
+            			List<String> tempFailedTestCases = readTestResults(results);
+            			tempFailedTestCases.retainAll(this.fakeFailedTestCasesList);
+            			if (!tempFailedTestCases.isEmpty()) {
+            				if (this.failedTestCasesStrList.size() == 1) continue;
+            
+            				// Might be partially fixed.
+            				tempFailedTestCases.removeAll(this.failedTestCasesStrList);
+            				if (!tempFailedTestCases.isEmpty()) continue; // Generate new bugs.
+            			}
+            		}
+            	}
+            } catch (IOException e) {
+            	log.debug(buggyProject + " ---Fixer: fix fail because of faile passing previously failed test cases! ");
+            	continue;
+            }
+            
+            List<String> failedTestsAfterFix = new ArrayList<>();
+            int errorTestAfterFix = TestUtils.getFailTestNumInProject(fullBuggyProjectPath, this.defects4jPath,
+            		failedTestsAfterFix);
+            failedTestsAfterFix.removeAll(this.fakeFailedTestCasesList);
+            
+            if (errorTestAfterFix < minErrorTest) {
+            	List<String> tmpFailedTestsAfterFix = new ArrayList<>();
+            	tmpFailedTestsAfterFix.addAll(failedTestsAfterFix);
+            	tmpFailedTestsAfterFix.removeAll(this.failedTestStrList);
+            	if (tmpFailedTestsAfterFix.size() > 0) { // Generate new bugs.
+            		log.debug(buggyProject + " ---Generated new bugs: " + tmpFailedTestsAfterFix.size());
+            		continue;
+            	}
+            	
+            	// Output the generated patch.
+            	if (errorTestAfterFix == 0 || failedTestsAfterFix.isEmpty()) {
+            		fixedStatus = 1;
+            		log.info("Succeeded to fix the bug " + buggyProject + "====================");
+            		String patchStr = TestUtils.readPatch(this.fullBuggyProjectPath);
+            		if (patchStr == null || !patchStr.startsWith("diff")) {
+            			FileHelper.outputToFile(Configuration.outputPath + "FixedBugs/" + buggyProject + "/Patch_" + patchId + ".txt",
+            					"//**********************************************************\n//" + scn.suspiciousJavaFile + " ------ " + scn.buggyLine
+            					+ "\n//**********************************************************\n"
+            					+ "===Buggy Code===\n" + buggyCode + "\n\n===Patch Code===\n" + patchCode, false);
+            		} else {
+            			FileHelper.outputToFile(Configuration.outputPath + "FixedBugs/" + buggyProject + "/Patch_" + patchId + ".txt", patchStr + "\n", false);
+            		}
+            		this.minErrorTest = 0;
+            		break;
+            	} else {
+            		if (minErrorTestAfterFix == 0 || errorTestAfterFix <= minErrorTestAfterFix) {
+            			minErrorTestAfterFix = errorTestAfterFix;
+            			if (fixedStatus != 1) fixedStatus = 2;
+            			log.info("Partially Succeeded to fix the bug " + buggyProject + "====================");
+            			String patchStr = TestUtils.readPatch(this.fullBuggyProjectPath);
+            			if (patchStr == null || !patchStr.startsWith("diff")) {
+            				FileHelper.outputToFile(Configuration.outputPath + "PartiallyFixedBugs/" + buggyProject + "/Patch_" + patchId + ".txt",
+            						"//**********************************************************\n//" + scn.suspiciousJavaFile + " ------ " + scn.buggyLine
+            						+ "\n//**********************************************************\n"
+            						+ "===Buggy Code===\n" + buggyCode + "\n\n===Patch Code===\n" + patchCode, false);
+            			} else {
+            				FileHelper.outputToFile(Configuration.outputPath + "PartiallyFixedBugs/" + buggyProject + "/Patch_" + patchId + ".txt", patchStr + "\n", false);
+            			}
+            		}
+            	}
+            } else {
+            	log.debug("Failed Tests after fixing: " + errorTestAfterFix + " " + buggyProject);
+            }
             */
-		}
-        obj.put("cases", ja);
-        FileHelper.outputToFile(tmpFileName, obj.toString(2), false);
+        }
 
-		try {
-			scn.targetJavaFile.delete();
-			scn.targetClassFile.delete();
-			Files.copy(scn.javaBackup.toPath(), scn.targetJavaFile.toPath());
-			Files.copy(scn.classBackup.toPath(), scn.targetClassFile.toPath());
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-	}
+        // try {
+        //     scn.targetJavaFile.delete();
+        //     scn.targetClassFile.delete();
+        //     Files.copy(scn.javaBackup.toPath(), scn.targetJavaFile.toPath());
+        //     Files.copy(scn.classBackup.toPath(), scn.targetClassFile.toPath());
+        // } catch (IOException e1) {
+        //     e1.printStackTrace();
+        // }
+    }
+    
+    public void saveAsJsonFile(File json) {
+        JSONArray fileArr = new JSONArray();
+        jsonObject.put("rules", fileArr);
+        for (String filename : rules.keySet()) {
+            JSONObject fileObj = new JSONObject();
+            fileObj.put("file_name", filename);
+            JSONArray lineArr = new JSONArray();
+            fileObj.put("lines", lineArr);
+            fileArr.put(fileObj);
+            HashMap<Integer, ArrayList<JSONObject>> lines = rules.get(filename);
+            for (Integer line : lines.keySet()) {
+                SuspCodeNode scn = lineMap.get(filename + ":" + line);
+                JSONObject lineObj = new JSONObject();
+                JSONArray csArray = new JSONArray();
+                lineObj.put("line", line);
+                lineObj.put("fl_score", scn.flScore);
+                lineObj.put("id", scn.flScoreRank);
+                lineObj.put("cases", csArray);
+                lineArr.put(lineObj);
+                ArrayList<JSONObject> cases = lines.get(line);
+                for (JSONObject caseObj : cases) {
+                    csArray.put(caseObj);
+                }
+            }
+        }
+        HashSet<String> funcSet = new HashSet<>();
+        HashMap<String, ArrayList<JSONObject>> fileMap = new HashMap<>();
+        for (String fileLine : lineMap.keySet()) {
+            SuspCodeNode scn = lineMap.get(fileLine);
+            if (!fileMap.containsKey(scn.suspiciousJavaFile)) {
+                fileMap.put(scn.suspiciousJavaFile, new ArrayList<JSONObject>());
+            }
+            ArrayList<JSONObject> funcList = fileMap.get(scn.suspiciousJavaFile);
+            JSONObject funcObj = new JSONObject();
+            String funcName = scn.buggyMethod.methodName;
+            int begin = scn.buggyMethod.startLine;
+            int end = scn.buggyMethod.endLine;
+            String key = scn.suspiciousJavaFile + "$" + funcName + ":" + begin + "-" + end;
+            if (funcSet.contains(key)) {
+                continue;
+            }
+            funcSet.add(key);
+            funcObj.put("function", funcName);
+            funcObj.put("begin", begin);
+            funcObj.put("end", end);
+            funcList.add(funcObj);
+        }
+        JSONArray func_locations = new JSONArray();
+        for (String fileName : fileMap.keySet()) {
+            JSONObject fileObj = new JSONObject();
+            fileObj.put("file", fileName);
+            JSONArray funcArr = new JSONArray();
+            fileObj.put("functions", funcArr);
+            func_locations.put(fileObj);
+            ArrayList<JSONObject> funcList = fileMap.get(fileName);
+            for (JSONObject funcObj : funcList) {
+                funcArr.put(funcObj);
+            }
+        }
+        jsonObject.put("func_locations", func_locations);
+
+        try {
+            FileHelper.outputToFile(json.getAbsolutePath(), jsonObject.toString(2), false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 	
 	private List<String> readTestResults(String results) {
 		List<String> failedTeatCases = new ArrayList<>();
@@ -474,6 +551,7 @@ public abstract class AbstractFixer implements IFixer {
         public int buggyLine;
         public double flScore;
         public int flScoreRank;
+        public BuggyMethod buggyMethod;
 		
 		public SuspCodeNode(File javaBackup, File classBackup, File targetJavaFile, File targetClassFile, int startPos,
 				int endPos, ITree suspCodeAstNode, String suspCodeStr, String suspiciousJavaFile, int buggyLine) {

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class Main {
 			File buggyProject = new File(buggyProjectsPath + "/" + buggyProjectName);
 			String workDir = buggyProject.getAbsolutePath();
 			if (!buggyProject.exists()) {
+				// ShellUtils.shellRun(Arrays.asList("rm -rf " + workDir), buggyProjectName);
 				ShellUtils.shellRun(Arrays.asList("defects4j checkout -p " + proj + " -v " + id + "b -w " + workDir),
 						buggyProject.getAbsolutePath() + "-checkout");
 				ShellUtils.shellRun(Arrays.asList("defects4j compile -w " + workDir), buggyProjectName + "-compile");
@@ -100,7 +102,7 @@ public class Main {
 		AbstractFixer fixer = new Avatar(buggyProjectsPath, projectName, bugId, defects4jPath);
 		fixer.jsonObject.put("project_name", buggyProjectName);
 		setTestInfo(fixer.jsonObject, buggyProjectsPath, defects4jPath, buggyProjectName, projectName, bugId);
-
+		
 		fixer.metric = Configuration.faultLocalizationMetric;
 		fixer.dataType = dataType;
 		fixer.suspCodePosFile = new File(suspiciousFileStr);
@@ -110,6 +112,8 @@ public class Main {
 		}
 		
 		fixer.fixProcess();
+		File jsonFile = new File("d4j/" + buggyProjectName + "/switch-info.json");
+		fixer.saveAsJsonFile(jsonFile);
 		
 		int fixedStatus = fixer.fixedStatus;
 		switch (fixedStatus) {

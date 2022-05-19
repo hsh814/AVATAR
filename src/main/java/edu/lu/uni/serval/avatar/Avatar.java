@@ -51,7 +51,7 @@ public class Avatar extends AbstractFixer {
 	@Override
 	public void fixProcess() {
 		// Read paths of the buggy project.
-		if (!dp.validPaths) return;
+		// if (!dp.validPaths) return;
 		
 		// Localize suspicious code positions.
 		// Read suspicious positions.
@@ -68,6 +68,8 @@ public class Avatar extends AbstractFixer {
             scn.flScore = suspiciousCode.flScore;
             scn.flScoreRank = rank;
             rank++;
+            if (rank > 10)
+                break;
 //			log.debug(scn.suspCodeStr);
 			if (triedSuspNode.contains(scn)) continue;
 			triedSuspNode.add(scn);
