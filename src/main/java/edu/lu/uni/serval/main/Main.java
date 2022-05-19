@@ -51,15 +51,19 @@ public class Main {
 			outDir.mkdirs();
 			String outFileName = "d4j/" + buggyProjectName + "/tests.trigger";
 			String outFileNameAll = "d4j/" + buggyProjectName + "/tests.all";
+			File outFile = new File(outFileName);
+			File outFileAll = new File(outFileNameAll);
+			if (!(outFile.exists() && outFileAll.exists())) {
+				ShellUtils.shellRun(
+						Arrays.asList("defects4j export -w " + workDir + " -p tests.trigger -o " + outFileName),
+						buggyProjectName + "-test");
+				ShellUtils.shellRun(
+						Arrays.asList("defects4j export -w " + workDir + " -p tests.all -o " + outFileNameAll),
+						buggyProjectName + "-test-all");
+			}
 
-			ShellUtils.shellRun(
-					Arrays.asList("defects4j export -w " + workDir + " -p tests.trigger -o " + outFileName),
-					buggyProjectName + "-test");
-			ShellUtils.shellRun(
-					Arrays.asList("defects4j export -w " + workDir + " -p tests.all -o " + outFileNameAll),
-					buggyProjectName + "-test-all");
 			HashSet<String> testSet = new HashSet<>();
-			String out = FileHelper.readFile(new File(outFileName));
+			String out = FileHelper.readFile(outFile);
 			ArrayList<String> failTests = new ArrayList<>(); 
 			String[] lines = out.split("\n");
 			for (String line : lines) {
@@ -71,8 +75,8 @@ public class Main {
 				failTests.add(test);
 			}
 			jsonObject.put("failing_test_cases", failTests);
-			String all = FileHelper.readFile(new File(outFileNameAll));
-			jsonObject.put("all_test_cases", all.split("\n"));
+			String all = FileHelper.readFile(outFileAll);
+			jsonObject.put("passing_test_cases", all.split("\n"));
 		} catch (IOException e) {
 			// log.debug(buggyProject + " ---Fixer: fix fail because of javac exception! ");
 			// continue;
