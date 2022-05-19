@@ -59,11 +59,15 @@ public class Avatar extends AbstractFixer {
 		if (suspiciousCodeList == null) return;
 		
 		List<SuspCodeNode> triedSuspNode = new ArrayList<>();
-		log.info("=======StaticBugFixer: Start to fix suspicious code======");
-		for (SuspiciousPosition suspiciousCode : suspiciousCodeList) {
+        log.info("=======StaticBugFixer: Start to fix suspicious code======");
+        int rank = 0;
+        for (SuspiciousPosition suspiciousCode : suspiciousCodeList) {
 			SuspCodeNode scn = parseSuspiciousCode(suspiciousCode);
 			if (scn == null) continue;
             scn.projectId = this.buggyProject;
+            scn.flScore = suspiciousCode.flScore;
+            scn.flScoreRank = rank;
+            rank++;
 //			log.debug(scn.suspCodeStr);
 			if (triedSuspNode.contains(scn)) continue;
 			triedSuspNode.add(scn);

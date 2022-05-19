@@ -62,7 +62,8 @@ public abstract class AbstractFixer implements IFixer {
 	// 0: failed to fix the bug, 1: succeeded to fix the bug. 2: partially succeeded to fix the bug.
 	public int fixedStatus = 0;
 	public String dataType = "";
-	protected int patchId = 0;
+    protected int patchId = 0;
+    public JSONObject jsonObject = new JSONObject();
 //	private TimeLine timeLine;
 	
 	public AbstractFixer(String path, String projectName, int bugId, String defects4jPath) {
@@ -151,7 +152,8 @@ public abstract class AbstractFixer implements IFixer {
 				SuspiciousCode candidate = suspStmts.get(index);
 				SuspiciousPosition sp = new SuspiciousPosition();
             	sp.classPath = candidate.getClassName();
-            	sp.lineNumber = candidate.lineNumber;
+                sp.lineNumber = candidate.lineNumber;
+                sp.flScore = candidate.getSuspiciousValue();
             	suspiciousCodeList.add(sp);
 			}
 		} else {
@@ -163,7 +165,8 @@ public abstract class AbstractFixer implements IFixer {
 	            	String[] elements = line.split("@");
 	            	SuspiciousPosition sp = new SuspiciousPosition();
 	            	sp.classPath = elements[0];
-	            	sp.lineNumber = Integer.valueOf(elements[1]);
+                    sp.lineNumber = Integer.valueOf(elements[1]);
+                    sp.flScore = Double.valueOf(elements[2]);
 	            	suspiciousCodeList.add(sp);
 	            }
 	            reader.close();
@@ -228,26 +231,40 @@ public abstract class AbstractFixer implements IFixer {
 	protected List<Patch> triedPatchCandidates = new ArrayList<>();
 	
     protected void testGeneratedPatches(List<Patch> patchCandidates, SuspCodeNode scn) {
+        String mutation = patchCandidates.get(0).mutation;
+        String tmpFileName = "d4j/" + scn.projectId + "/" + scn.flScoreRank + "/" + mutation + "/";
+        JSONObject obj = new JSONObject();
+        JSONArray ja = new JSONArray();
+        obj.put("mutation", mutation);
+        obj.put("line", scn.buggyLine);
+        obj.put("oldcode", scn.suspCodeStr);
+        obj.put("file", scn.suspiciousJavaFile);
+        JSONObject mutObj = new JSONObject();
+        mutObj.put("mutation", mutation);
         // Testing generated patches.
         for (Patch patch : patchCandidates) {
 			patch.buggyFileName = scn.suspiciousJavaFile;
 			if (this.triedPatchCandidates.contains(patch)) continue;
             patch.patchId = patchId;
 			patchId++;
-			
-            addPatchCodeToFile(scn, patch);// Insert the patch.
+            String patchLoc = tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName();
+            addPatchCodeToFile(scn, patch, patchLoc);// Insert the patch.
             
-            JSONObject jo = new JSONObject();
-            jo.put("patch_id", patch.patchId);
-            jo.put("buggy_file", patch.buggyFileName);
-            jo.put("buggy_code", patch.getBuggyCodeStr());
-            jo.put("patch_code", patch.getFixedCodeStr1());
-            // jo.put("buggy_line", patch.get)
+
+            
 
 			String buggyCode = patch.getBuggyCodeStr();
-			if ("===StringIndexOutOfBoundsException===".equals(buggyCode)) continue;
+            if ("===StringIndexOutOfBoundsException===".equals(buggyCode))
+                continue;
+            JSONObject jo = new JSONObject();
+            jo.put("patch_id", patch.patchId);
+            jo.put("buggy_code", patch.getBuggyCodeStr());
+            jo.put("patch_code", patch.getFixedCodeStr1());
+            jo.put("location", patchLoc);
+            ja.put(jo);
+            /*
 			String patchCode = patch.getFixedCodeStr1();
-			scn.targetClassFile.delete();
+            scn.targetClassFile.delete();
 
 			log.debug("Compiling");
 			try {// Compile patched file.
@@ -344,8 +361,11 @@ public abstract class AbstractFixer implements IFixer {
 			} else {
 				log.debug("Failed Tests after fixing: " + errorTestAfterFix + " " + buggyProject);
 			}
+            */
 		}
-		
+        obj.put("cases", ja);
+        FileHelper.outputToFile(tmpFileName, obj.toString(2), false);
+
 		try {
 			scn.targetJavaFile.delete();
 			scn.targetClassFile.delete();
@@ -379,7 +399,7 @@ public abstract class AbstractFixer implements IFixer {
 		return failedTeatCases;
 	}
 
-	private void addPatchCodeToFile(SuspCodeNode scn, Patch patch) {
+	private void addPatchCodeToFile(SuspCodeNode scn, Patch patch, String patchLoc) {
         String javaCode = FileHelper.readFile(scn.javaBackup);
         
 		String fixedCodeStr1 = patch.getFixedCodeStr1();
@@ -424,11 +444,11 @@ public abstract class AbstractFixer implements IFixer {
 	        		patchCode += fixedCodeStr2;
 	        	}
 	        }
-			
-			File newFile = new File(scn.targetJavaFile.getAbsolutePath() + ".temp");
+            // FileHelper.outputToFile(patchLoc, patchedJavaFile, false);
+			// File newFile = new File(scn.targetJavaFile.getAbsolutePath() + ".temp");
 	        String patchedJavaFile = javaCode.substring(0, exactBuggyCodeStartPos) + patchCode + javaCode.substring(exactBuggyCodeEndPos);
-	        FileHelper.outputToFile(newFile, patchedJavaFile, false);
-	        newFile.renameTo(scn.targetJavaFile);
+	        FileHelper.outputToFile(patchLoc, patchedJavaFile, false);
+	        // newFile.renameTo(scn.targetJavaFile);
 		} catch (StringIndexOutOfBoundsException e) {
 			log.debug(exactBuggyCodeStartPos + " ==> " + exactBuggyCodeEndPos + " : " + javaCode.length());
 			e.printStackTrace();
@@ -451,7 +471,9 @@ public abstract class AbstractFixer implements IFixer {
 		public ITree suspCodeAstNode;
 		public String suspCodeStr;
 		public String suspiciousJavaFile;
-		public int buggyLine;
+        public int buggyLine;
+        public double flScore;
+        public int flScoreRank;
 		
 		public SuspCodeNode(File javaBackup, File classBackup, File targetJavaFile, File targetClassFile, int startPos,
 				int endPos, ITree suspCodeAstNode, String suspCodeStr, String suspiciousJavaFile, int buggyLine) {
