@@ -66,9 +66,10 @@ public abstract class AbstractFixer implements IFixer {
 	public int fixedStatus = 0;
 	public String dataType = "";
     protected int patchId = 0;
-    public JSONObject jsonObject = new JSONObject();
+    public JSONObject jsonObject = null;
     public HashMap<String, HashMap<Integer, ArrayList<JSONObject>>> rules = new HashMap<>();
     public HashMap<String, SuspCodeNode> lineMap = new HashMap<>();
+    public JSONArray patchRanking = new JSONArray();
 //	private TimeLine timeLine;
 	
 	public AbstractFixer(String path, String projectName, int bugId, String defects4jPath) {
@@ -77,25 +78,25 @@ public abstract class AbstractFixer implements IFixer {
 		fullBuggyProjectPath = path + buggyProject;
         this.defects4jPath = defects4jPath;
         minErrorTest = 1;
-//		int compileResult = TestUtils.compileProjectWithDefects4j(fullBuggyProjectPath, this.defects4jPath);
-//      if (compileResult == 1) {
-//      	log.debug(buggyProject + " ---Fixer: fix fail because of compile fail! ");
-//      }
-		// if (FileHelper.getAllFiles(path + buggyProject + PathUtils.getSrcPath(buggyProject).get(0), ".class").isEmpty()) {
-		// 	TestUtils.compileProjectWithDefects4j(path + buggyProject, defects4jPath);
-		// }
-		// minErrorTest = TestUtils.getFailTestNumInProject(path + buggyProject, defects4jPath, failedTestStrList);
-		// if (minErrorTest == Integer.MAX_VALUE) {
-		// 	TestUtils.compileProjectWithDefects4j(path + buggyProject, defects4jPath);
-		// 	minErrorTest = TestUtils.getFailTestNumInProject(path + buggyProject, defects4jPath, failedTestStrList);
-		// }
-		// log.info(buggyProject + " Failed Tests: " + this.minErrorTest);
+		// int compileResult = TestUtils.compileProjectWithDefects4j(fullBuggyProjectPath, this.defects4jPath);
+        // if (compileResult == 1) {
+        //     log.debug(buggyProject + " ---Fixer: fix fail because of compile fail! ");
+        // }
+		if (FileHelper.getAllFiles(path + buggyProject + PathUtils.getSrcPath(buggyProject).get(0), ".class").isEmpty()) {
+			TestUtils.compileProjectWithDefects4j(path + buggyProject, defects4jPath);
+		}
+		minErrorTest = TestUtils.getFailTestNumInProject(path + buggyProject, defects4jPath, failedTestStrList);
+		if (minErrorTest == Integer.MAX_VALUE) {
+			TestUtils.compileProjectWithDefects4j(path + buggyProject, defects4jPath);
+			minErrorTest = TestUtils.getFailTestNumInProject(path + buggyProject, defects4jPath, failedTestStrList);
+		}
+		log.info(buggyProject + " Failed Tests: " + this.minErrorTest);
 		
 		// Read paths of the buggy project.
 		this.dp = new DataPreparer(path);
 		dp.prepareData(buggyProject);
 		
-		// readPreviouslyFailedTestCases();
+		readPreviouslyFailedTestCases();
 	}
 
 	public AbstractFixer(String path, String metric, String projectName, int bugId, String defects4jPath) {
@@ -273,6 +274,7 @@ public abstract class AbstractFixer implements IFixer {
             jo.put("location", patchLoc);
             jo.put("mutation", patch.mutation);
             lineInfo.add(jo);
+            patchRanking.put(patchLoc);
             /*
             String patchCode = patch.getFixedCodeStr1();
             scn.targetClassFile.delete();
@@ -410,6 +412,7 @@ public abstract class AbstractFixer implements IFixer {
                 }
             }
         }
+        jsonObject.put("ranking", patchRanking);
         HashSet<String> funcSet = new HashSet<>();
         HashMap<String, ArrayList<JSONObject>> fileMap = new HashMap<>();
         for (String fileLine : lineMap.keySet()) {

@@ -98,10 +98,11 @@ public class Main {
 			System.err.println("Please input correct buggy project ID, such as \"Chart_1\".");
 			return;
 		}
-		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("project_name", buggyProjectName);
+		setTestInfo(jsonObject, buggyProjectsPath, defects4jPath, buggyProjectName, projectName, bugId);
 		AbstractFixer fixer = new Avatar(buggyProjectsPath, projectName, bugId, defects4jPath);
-		fixer.jsonObject.put("project_name", buggyProjectName);
-		setTestInfo(fixer.jsonObject, buggyProjectsPath, defects4jPath, buggyProjectName, projectName, bugId);
+		fixer.jsonObject = jsonObject;
 		
 		fixer.metric = Configuration.faultLocalizationMetric;
 		fixer.dataType = dataType;
