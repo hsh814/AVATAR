@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,6 +16,7 @@ import edu.lu.uni.serval.avatar.Avatar;
 import edu.lu.uni.serval.config.Configuration;
 
 import edu.lu.uni.serval.utils.ShellUtils;
+import edu.lu.uni.serval.utils.TestUtils;
 import edu.lu.uni.serval.utils.FileHelper;
 
 /**
@@ -42,6 +44,7 @@ public class Main {
 	public static void setTestInfo(JSONObject jsonObject, String buggyProjectsPath, String defects4jPath, String buggyProjectName, String proj, int id) {
 		try {// Compile patched file.
 			File buggyProject = new File(buggyProjectsPath + "/" + buggyProjectName);
+			File fixedProject = new File(buggyProjectsPath + "/" + buggyProjectName + "f");
 			String workDir = buggyProject.getAbsolutePath();
 			if (!buggyProject.exists()) {
 				// ShellUtils.shellRun(Arrays.asList("rm -rf " + workDir), buggyProjectName);
@@ -63,22 +66,31 @@ public class Main {
 						Arrays.asList("defects4j export -w " + workDir + " -p tests.all -o " + outFileNameAll),
 						buggyProjectName + "-test-all");
 			}
+			if (!fixedProject.exists()) {
+				ShellUtils.shellRun(Arrays.asList("defects4j checkout -p " + proj + " -v " + id + "f -w " + fixedProject.getAbsolutePath()),
+						buggyProjectName + "-checkout-fixed");
+				ShellUtils.shellRun(Arrays.asList("defects4j compile -w " + fixedProject.getAbsolutePath()), buggyProjectName + "-compile-fixed");
+			}
+			List<String> failedTests = new ArrayList<>();
+			int count = TestUtils.getFailTestNumInProject(fixedProject.getAbsolutePath(), defects4jPath, failedTests);
 
-			HashSet<String> testSet = new HashSet<>();
+			// HashSet<String> testSet = new HashSet<>();
 			String out = FileHelper.readFile(outFile);
 			ArrayList<String> failTests = new ArrayList<>(); 
 			String[] lines = out.split("\n");
 			for (String line : lines) {
-				String test = line.split("::")[0];
-				if (testSet.contains(test)) {
-					continue;
-				}
-				testSet.add(test);
-				failTests.add(test);
+				// String test = line.split("::")[0];
+				// if (testSet.contains(test)) {
+				// 	continue;
+				// }
+				// testSet.add(test);
+				failTests.add(line.trim());
 			}
 			jsonObject.put("failing_test_cases", failTests);
 			String all = FileHelper.readFile(outFileAll);
 			jsonObject.put("passing_test_cases", all.split("\n"));
+			jsonObject.put("failed_passing_tests", failedTests);
+			FileHelper.outputToFile("d4j/" + buggyProjectName + "/switch-info.json", jsonObject.toString(2), false);
 		} catch (IOException e) {
 			// log.debug(buggyProject + " ---Fixer: fix fail because of javac exception! ");
 			// continue;

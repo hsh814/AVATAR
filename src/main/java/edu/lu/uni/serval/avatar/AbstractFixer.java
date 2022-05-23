@@ -252,7 +252,8 @@ public abstract class AbstractFixer implements IFixer {
         ArrayList<JSONObject> lineInfo = fileInfo.get(scn.buggyLine);
 
         String mutation = patchCandidates.get(0).mutation;
-        String tmpFileName = "d4j/" + scn.projectId + "/" + scn.flScoreRank + "/" + mutation + "/";
+        String patchDir = "d4j/" + scn.projectId + "/";
+        String tmpFileName =  scn.flScoreRank + "/" + mutation + "/";
 
         // Testing generated patches.
         for (Patch patch : patchCandidates) {
@@ -261,7 +262,7 @@ public abstract class AbstractFixer implements IFixer {
                 continue;
             patch.patchId = patchId;
             patchId++;
-            String patchLoc = tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName();
+            String patchLoc = patchDir + tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName();
             addPatchCodeToFile(scn, patch, patchLoc);// Insert the patch.
 
             String buggyCode = patch.getBuggyCodeStr();
@@ -271,7 +272,7 @@ public abstract class AbstractFixer implements IFixer {
             jo.put("patch_id", patch.patchId);
             jo.put("buggy_code", patch.getBuggyCodeStr());
             jo.put("patch_code", patch.getFixedCodeStr1());
-            jo.put("location", patchLoc);
+            jo.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
             jo.put("mutation", patch.mutation);
             lineInfo.add(jo);
             patchRanking.put(patchLoc);
