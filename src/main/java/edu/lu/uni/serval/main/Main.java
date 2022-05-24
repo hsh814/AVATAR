@@ -90,7 +90,7 @@ public class Main {
 			String all = FileHelper.readFile(outFileAll);
 			jsonObject.put("passing_test_cases", all.split("\n"));
 			jsonObject.put("failed_passing_tests", failedTests);
-			FileHelper.outputToFile("d4j/" + buggyProjectName + "/switch-info.json", jsonObject.toString(2), false);
+			//FileHelper.outputToFile("d4j/" + buggyProjectName + "/switch-info.json", jsonObject.toString(2), false);
 		} catch (IOException e) {
 			// log.debug(buggyProject + " ---Fixer: fix fail because of javac exception! ");
 			// continue;

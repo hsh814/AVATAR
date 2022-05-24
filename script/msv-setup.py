@@ -61,7 +61,8 @@ all = False
 print("Setup msv!")
 print(f"total {len(lst)}!")
 # repair
-os.mkdir("out")
+if not os.path.exists('out'):
+  os.mkdir("out")
 pool = mp.Pool(processes=64)
 result = []
 # signal.signal(signal.SIGHUP,signal.SIG_IGN)
