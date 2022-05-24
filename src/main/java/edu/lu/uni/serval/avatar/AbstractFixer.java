@@ -270,7 +270,7 @@ public abstract class AbstractFixer implements IFixer {
                 continue;
             JSONObject jo = new JSONObject();
             jo.put("patch_id", patch.patchId);
-            jo.put("buggy_code", patch.getBuggyCodeStr());
+            // jo.put("buggy_code", patch.getBuggyCodeStr());
             jo.put("patch_code", patch.getFixedCodeStr1());
             jo.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
             jo.put("mutation", patch.mutation);
