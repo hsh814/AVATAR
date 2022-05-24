@@ -255,6 +255,8 @@ public abstract class AbstractFixer implements IFixer {
         String patchDir = "d4j/" + scn.projectId + "/";
         String tmpFileName =  scn.flScoreRank + "/" + mutation + "/";
 
+				JSONArray localJson = new JSONArray();
+
         // Testing generated patches.
         for (Patch patch : patchCandidates) {
             patch.buggyFileName = scn.suspiciousJavaFile;
@@ -269,9 +271,20 @@ public abstract class AbstractFixer implements IFixer {
             if ("===StringIndexOutOfBoundsException===".equals(buggyCode))
                 continue;
             JSONObject jo = new JSONObject();
+						JSONObject localObject = new JSONObject();
+						localObject.put("file", scn.suspiciousJavaFile);
+						localObject.put("line", scn.buggyLine);
+						localObject.put("patch_id", patch.patchId);
+						localObject.put("mutation", patch.mutation);
+						localObject.put("fl_score", patch.flScore);
+						localObject.put("fl_score_rank", patch.flScoreRank);
+						localObject.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
+						localObject.put("buggy_code", patch.getBuggyCodeStr());
+						localObject.put("patch_code", patch.getPatchCodeStr1());
+						localJson.add(localObject);
             jo.put("patch_id", patch.patchId);
             // jo.put("buggy_code", patch.getBuggyCodeStr());
-            jo.put("patch_code", patch.getFixedCodeStr1());
+            // jo.put("patch_code", patch.getFixedCodeStr1());
             jo.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
             jo.put("mutation", patch.mutation);
             lineInfo.add(jo);
@@ -377,6 +390,8 @@ public abstract class AbstractFixer implements IFixer {
             }
             */
         }
+				File localJsonFile = new File(patchDir + tmpFileName + "patches.json");
+				FileHelper.outputToFile(localJsonFile, localJson.toString(), false);
 
         // try {
         //     scn.targetJavaFile.delete();
