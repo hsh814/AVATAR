@@ -276,12 +276,12 @@ public abstract class AbstractFixer implements IFixer {
 						localObject.put("line", scn.buggyLine);
 						localObject.put("patch_id", patch.patchId);
 						localObject.put("mutation", patch.mutation);
-						localObject.put("fl_score", patch.flScore);
-						localObject.put("fl_score_rank", patch.flScoreRank);
+						// localObject.put("fl_score", patch.flScore);
+						// localObject.put("fl_score_rank", patch.flScoreRank);
 						localObject.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
 						localObject.put("buggy_code", patch.getBuggyCodeStr());
-						localObject.put("patch_code", patch.getPatchCodeStr1());
-						localJson.add(localObject);
+						localObject.put("patch_code", patch.getFixedCodeStr1());
+						localJson.put(localObject);
             jo.put("patch_id", patch.patchId);
             // jo.put("buggy_code", patch.getBuggyCodeStr());
             // jo.put("patch_code", patch.getFixedCodeStr1());
