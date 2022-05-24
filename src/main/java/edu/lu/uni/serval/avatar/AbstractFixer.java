@@ -68,7 +68,8 @@ public abstract class AbstractFixer implements IFixer {
     protected int patchId = 0;
     public JSONObject jsonObject = null;
     public HashMap<String, HashMap<Integer, ArrayList<JSONObject>>> rules = new HashMap<>();
-    public HashMap<String, SuspCodeNode> lineMap = new HashMap<>();
+	public HashMap<String, SuspCodeNode> lineMap = new HashMap<>();
+	public HashMap<String, String> javaFileToClassMap = new HashMap<>();
     public JSONArray patchRanking = new JSONArray();
 //	private TimeLine timeLine;
 	
@@ -242,6 +243,11 @@ public abstract class AbstractFixer implements IFixer {
 		String full = scn.targetJavaFile.getAbsolutePath();
 		File buggyDir = new File("buggy/" + scn.projectId);
 		String targetFileName = full.replaceFirst(buggyDir.getAbsolutePath() + "/", "");
+		if (!javaFileToClassMap.containsKey(targetFileName)) {
+			full = scn.targetClassFile.getAbsolutePath();
+			String targetClassName = full.replaceFirst(buggyDir.getAbsolutePath() + "/", "");
+			javaFileToClassMap.put(targetFileName, targetClassName);
+		}
 		if (!lineMap.containsKey(targetFileName + ":" + scn.buggyLine)) {
 			lineMap.put(targetFileName + ":" + scn.buggyLine, scn);
 		}
@@ -460,7 +466,9 @@ public abstract class AbstractFixer implements IFixer {
         JSONArray func_locations = new JSONArray();
         for (String fileName : fileMap.keySet()) {
             JSONObject fileObj = new JSONObject();
-            fileObj.put("file", fileName);
+			fileObj.put("file", fileName);
+			String className = javaFileToClassMap.get(fileName);
+			fileObj.put("class_name", className);
             JSONArray funcArr = new JSONArray();
             fileObj.put("functions", funcArr);
             func_locations.put(fileObj);
