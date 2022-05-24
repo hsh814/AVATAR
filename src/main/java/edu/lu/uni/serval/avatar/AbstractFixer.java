@@ -287,17 +287,18 @@ public abstract class AbstractFixer implements IFixer {
 			localObject.put("mutation", patch.mutation);
 			// localObject.put("fl_score", patch.flScore);
 			// localObject.put("fl_score_rank", patch.flScoreRank);
-			localObject.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
+			String location = tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName();
+			localObject.put("location", location);
 			localObject.put("buggy_code", patch.getBuggyCodeStr());
 			localObject.put("patch_code", patch.getFixedCodeStr1());
 			localJson.put(localObject);
             jo.put("patch_id", patch.patchId);
             // jo.put("buggy_code", patch.getBuggyCodeStr());
             // jo.put("patch_code", patch.getFixedCodeStr1());
-            jo.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
+            jo.put("location", location);
             jo.put("mutation", patch.mutation);
             lineInfo.add(jo);
-            patchRanking.put(patchLoc);
+            patchRanking.put(location);
             /*
             String patchCode = patch.getFixedCodeStr1();
             scn.targetClassFile.delete();
@@ -417,7 +418,9 @@ public abstract class AbstractFixer implements IFixer {
         jsonObject.put("rules", fileArr);
         for (String filename : rules.keySet()) {
             JSONObject fileObj = new JSONObject();
-            fileObj.put("file_name", filename);
+			fileObj.put("file_name", filename);
+			String className = javaFileToClassMap.get(filename);
+			fileObj.put("class_name", className);
 			JSONArray lineArr = new JSONArray();
             fileObj.put("lines", lineArr);
             fileArr.put(fileObj);
@@ -467,8 +470,6 @@ public abstract class AbstractFixer implements IFixer {
         for (String fileName : fileMap.keySet()) {
             JSONObject fileObj = new JSONObject();
 			fileObj.put("file", fileName);
-			String className = javaFileToClassMap.get(fileName);
-			fileObj.put("class_name", className);
             JSONArray funcArr = new JSONArray();
             fileObj.put("functions", funcArr);
             func_locations.put(fileObj);

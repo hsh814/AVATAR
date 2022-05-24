@@ -32,7 +32,7 @@ public abstract class FixTemplate implements IFixTemplate {
 	protected Map<String, List<String>> allVarNamesMap;
 	
 	protected void generatePatch(String fixedCodeStr1) {
-		log.debug("Patch Candiate: " + fixedCodeStr1);
+		// log.debug("Patch Candiate: " + fixedCodeStr1);
 		Patch patch = new Patch();
 		patch.mutation = this.getClass().getSimpleName();
 		patch.setFixedCodeStr1(fixedCodeStr1);
@@ -40,7 +40,7 @@ public abstract class FixTemplate implements IFixTemplate {
 	}
 	
 	protected void generatePatch(int suspCodeEndPos, String fixedCodeStr1) {
-		log.debug("Patch Candiate: " + fixedCodeStr1);
+		// log.debug("Patch Candiate: " + fixedCodeStr1);
 		Patch patch = new Patch();
 		patch.mutation = this.getClass().getSimpleName();
 		patch.setBuggyCodeEndPos(suspCodeEndPos);
@@ -49,7 +49,7 @@ public abstract class FixTemplate implements IFixTemplate {
 	}
 	
 	protected void generatePatch(int suspCodeStartPos, int suspCodeEndPos, String fixedCodeStr1, String fixedCodeStr2) {
-		log.debug("Patch Candiate: " + fixedCodeStr1 + "\n" + fixedCodeStr2);
+		// log.debug("Patch Candiate: " + fixedCodeStr1 + "\n" + fixedCodeStr2);
 		Patch patch = new Patch();
 		patch.mutation = this.getClass().getSimpleName();
 		patch.setBuggyCodeStartPos(suspCodeStartPos);
