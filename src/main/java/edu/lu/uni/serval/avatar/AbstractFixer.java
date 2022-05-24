@@ -423,6 +423,9 @@ public abstract class AbstractFixer implements IFixer {
             }
             ArrayList<JSONObject> funcList = fileMap.get(scn.suspiciousJavaFile);
             JSONObject funcObj = new JSONObject();
+            if (scn.buggyMethod == null) {
+                continue;
+            }
             String funcName = scn.buggyMethod.methodName;
             int begin = scn.buggyMethod.startLine;
             int end = scn.buggyMethod.endLine;

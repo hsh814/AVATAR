@@ -13,4 +13,4 @@ metric=Ochiai
 bugId=$1
 
 
-java -Xmx4g -cp "target/dependency/*" edu.lu.uni.serval.main.Main $d4jData $d4jPath $bugId $metric
+java -Xmx40g -cp "target/dependency/*" edu.lu.uni.serval.main.Main $d4jData $d4jPath $bugId $metric
