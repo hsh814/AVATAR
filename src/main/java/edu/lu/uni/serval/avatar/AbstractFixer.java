@@ -239,13 +239,16 @@ public abstract class AbstractFixer implements IFixer {
 	protected List<Patch> triedPatchCandidates = new ArrayList<>();
 	
     protected void testGeneratedPatches(List<Patch> patchCandidates, SuspCodeNode scn) {
-        if (!lineMap.containsKey(scn.suspiciousJavaFile + ":" + scn.buggyLine)) {
-            lineMap.put(scn.suspiciousJavaFile + ":" + scn.buggyLine, scn);
+		String full = scn.targetJavaFile.getAbsolutePath();
+		File buggyDir = new File("buggy/" + scn.projectId);
+		String targetFileName = full.replaceFirst(buggyDir.getAbsolutePath() + "/", "");
+		if (!lineMap.containsKey(targetFileName + ":" + scn.buggyLine)) {
+			lineMap.put(targetFileName + ":" + scn.buggyLine, scn);
+		}
+        if (!rules.containsKey(targetFileName)) {
+            rules.put(targetFileName, new HashMap<Integer, ArrayList<JSONObject>>());
         }
-        if (!rules.containsKey(scn.suspiciousJavaFile)) {
-            rules.put(scn.suspiciousJavaFile, new HashMap<Integer, ArrayList<JSONObject>>());
-        }
-        HashMap<Integer, ArrayList<JSONObject>> fileInfo = rules.get(scn.suspiciousJavaFile);
+        HashMap<Integer, ArrayList<JSONObject>> fileInfo = rules.get(targetFileName);
         if (!fileInfo.containsKey(scn.buggyLine)) {
             fileInfo.put(scn.buggyLine, new ArrayList<JSONObject>());
         }
@@ -255,7 +258,7 @@ public abstract class AbstractFixer implements IFixer {
         String patchDir = "d4j/" + scn.projectId + "/";
         String tmpFileName =  scn.flScoreRank + "/" + mutation + "/";
 
-				JSONArray localJson = new JSONArray();
+		JSONArray localJson = new JSONArray();
 
         // Testing generated patches.
         for (Patch patch : patchCandidates) {
@@ -271,17 +274,17 @@ public abstract class AbstractFixer implements IFixer {
             if ("===StringIndexOutOfBoundsException===".equals(buggyCode))
                 continue;
             JSONObject jo = new JSONObject();
-						JSONObject localObject = new JSONObject();
-						localObject.put("file", scn.suspiciousJavaFile);
-						localObject.put("line", scn.buggyLine);
-						localObject.put("patch_id", patch.patchId);
-						localObject.put("mutation", patch.mutation);
-						// localObject.put("fl_score", patch.flScore);
-						// localObject.put("fl_score_rank", patch.flScoreRank);
-						localObject.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
-						localObject.put("buggy_code", patch.getBuggyCodeStr());
-						localObject.put("patch_code", patch.getFixedCodeStr1());
-						localJson.put(localObject);
+			JSONObject localObject = new JSONObject();
+			localObject.put("file", targetFileName);
+			localObject.put("line", scn.buggyLine);
+			localObject.put("patch_id", patch.patchId);
+			localObject.put("mutation", patch.mutation);
+			// localObject.put("fl_score", patch.flScore);
+			// localObject.put("fl_score_rank", patch.flScoreRank);
+			localObject.put("location", tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName());
+			localObject.put("buggy_code", patch.getBuggyCodeStr());
+			localObject.put("patch_code", patch.getFixedCodeStr1());
+			localJson.put(localObject);
             jo.put("patch_id", patch.patchId);
             // jo.put("buggy_code", patch.getBuggyCodeStr());
             // jo.put("patch_code", patch.getFixedCodeStr1());
@@ -390,8 +393,8 @@ public abstract class AbstractFixer implements IFixer {
             }
             */
         }
-				File localJsonFile = new File(patchDir + tmpFileName + "patches.json");
-				FileHelper.outputToFile(localJsonFile, localJson.toString(), false);
+		File localJsonFile = new File(patchDir + tmpFileName + "patches.json");
+		FileHelper.outputToFile(localJsonFile, localJson.toString(2), false);
 
         // try {
         //     scn.targetJavaFile.delete();
@@ -409,7 +412,7 @@ public abstract class AbstractFixer implements IFixer {
         for (String filename : rules.keySet()) {
             JSONObject fileObj = new JSONObject();
             fileObj.put("file_name", filename);
-            JSONArray lineArr = new JSONArray();
+			JSONArray lineArr = new JSONArray();
             fileObj.put("lines", lineArr);
             fileArr.put(fileObj);
             HashMap<Integer, ArrayList<JSONObject>> lines = rules.get(filename);
