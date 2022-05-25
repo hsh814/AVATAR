@@ -25,3 +25,4 @@ buggy/
 d4j/
 d4j-*/
 out/
+!data/*
