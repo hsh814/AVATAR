@@ -444,11 +444,12 @@ public abstract class AbstractFixer implements IFixer {
         HashSet<String> funcSet = new HashSet<>();
         HashMap<String, ArrayList<JSONObject>> fileMap = new HashMap<>();
         for (String fileLine : lineMap.keySet()) {
-            SuspCodeNode scn = lineMap.get(fileLine);
-            if (!fileMap.containsKey(scn.suspiciousJavaFile)) {
-                fileMap.put(scn.suspiciousJavaFile, new ArrayList<JSONObject>());
+			SuspCodeNode scn = lineMap.get(fileLine);
+			String fileName = fileLine.split(":")[1];
+            if (!fileMap.containsKey(fileName)) {
+                fileMap.put(fileName, new ArrayList<JSONObject>());
             }
-            ArrayList<JSONObject> funcList = fileMap.get(scn.suspiciousJavaFile);
+            ArrayList<JSONObject> funcList = fileMap.get(fileName);
             JSONObject funcObj = new JSONObject();
             if (scn.buggyMethod == null) {
                 continue;
@@ -456,7 +457,7 @@ public abstract class AbstractFixer implements IFixer {
             String funcName = scn.buggyMethod.methodName;
             int begin = scn.buggyMethod.startLine;
             int end = scn.buggyMethod.endLine;
-            String key = scn.suspiciousJavaFile + "$" + funcName + ":" + begin + "-" + end;
+            String key = fileName + "$" + funcName + ":" + begin + "-" + end;
             if (funcSet.contains(key)) {
                 continue;
             }
