@@ -23,6 +23,7 @@ import edu.lu.uni.serval.faultlocalization.SuspiciousCode;
 import edu.lu.uni.serval.jdt.tree.ITree;
 import edu.lu.uni.serval.utils.FileHelper;
 import edu.lu.uni.serval.utils.FileUtils;
+import edu.lu.uni.serval.utils.MethodLineFinder;
 import edu.lu.uni.serval.utils.PathUtils;
 import edu.lu.uni.serval.utils.ShellUtils;
 import edu.lu.uni.serval.utils.SuspiciousCodeParser;
@@ -413,10 +414,12 @@ public abstract class AbstractFixer implements IFixer {
         // }
     }
     
-    public void saveAsJsonFile(File json) {
+    public void saveAsJsonFile(File json, String projectId) {
         JSONArray fileArr = new JSONArray();
         jsonObject.put("rules", fileArr);
+		HashSet<String> fileSet = new HashSet<>();
         for (String filename : rules.keySet()) {
+			fileSet.add(filename);
             JSONObject fileObj = new JSONObject();
 			fileObj.put("file_name", filename);
 			String className = javaFileToClassMap.get(filename);
@@ -441,50 +444,24 @@ public abstract class AbstractFixer implements IFixer {
             }
         }
         jsonObject.put("ranking", patchRanking);
-        HashSet<String> funcSet = new HashSet<>();
-        HashMap<String, ArrayList<JSONObject>> fileMap = new HashMap<>();
-        for (String fileLine : lineMap.keySet()) {
-			SuspCodeNode scn = lineMap.get(fileLine);
-			String fileName = fileLine.split(":")[0];
-            if (!fileMap.containsKey(fileName)) {
-                fileMap.put(fileName, new ArrayList<JSONObject>());
-            }
-            ArrayList<JSONObject> funcList = fileMap.get(fileName);
-            JSONObject funcObj = new JSONObject();
-            if (scn.buggyMethod == null) {
-                continue;
-            }
-			String funcName = scn.buggyMethod.methodName;
-			for (String token : scn.buggyMethod.methodName.split(",")) {
-				if (token.trim().startsWith("MethodName")) {
-					funcName = token.split(":")[1].trim();
-					break;
-				}
-			}
-            int begin = scn.buggyMethod.startLine;
-            int end = scn.buggyMethod.endLine;
-            String key = fileName + "$" + funcName + ":" + begin + "-" + end;
-            if (funcSet.contains(key)) {
-                continue;
-            }
-            funcSet.add(key);
-            funcObj.put("function", funcName);
-            funcObj.put("begin", begin);
-            funcObj.put("end", end);
-            funcList.add(funcObj);
-        }
-        JSONArray func_locations = new JSONArray();
-        for (String fileName : fileMap.keySet()) {
-            JSONObject fileObj = new JSONObject();
-			fileObj.put("file", fileName);
-            JSONArray funcArr = new JSONArray();
+
+		JSONArray func_locations = new JSONArray();
+		for (String filename : fileSet) {
+			JSONObject fileObj = new JSONObject();
+			func_locations.put(fileObj);
+			fileObj.put("file", filename);
+			JSONArray funcArr = new JSONArray();
             fileObj.put("functions", funcArr);
-            func_locations.put(fileObj);
-            ArrayList<JSONObject> funcList = fileMap.get(fileName);
-            for (JSONObject funcObj : funcList) {
-                funcArr.put(funcObj);
-            }
-        }
+			MethodLineFinder mlf = new MethodLineFinder("buggy/" + projectId + "/" + filename);
+			List<MethodLineFinder.FunctionLocation> funcs = mlf.getFunctionLocations();
+			for (MethodLineFinder.FunctionLocation fn : funcs) {
+				JSONObject funcObj = new JSONObject();
+				funcObj.put("function", fn.funcName);
+				funcObj.put("begin", fn.startLine);
+				funcObj.put("end", fn.endLine);
+				funcArr.put(funcObj);
+			}
+		}
         jsonObject.put("func_locations", func_locations);
 
         try {

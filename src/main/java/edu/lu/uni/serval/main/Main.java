@@ -126,7 +126,7 @@ public class Main {
 		
 		fixer.fixProcess();
 		File jsonFile = new File("d4j/" + buggyProjectName + "/switch-info.json");
-		fixer.saveAsJsonFile(jsonFile);
+		fixer.saveAsJsonFile(jsonFile, buggyProjectName);
 		
 		int fixedStatus = fixer.fixedStatus;
 		switch (fixedStatus) {
