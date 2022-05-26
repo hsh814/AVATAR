@@ -454,7 +454,13 @@ public abstract class AbstractFixer implements IFixer {
             if (scn.buggyMethod == null) {
                 continue;
             }
-            String funcName = scn.buggyMethod.methodName;
+			String funcName = scn.buggyMethod.methodName;
+			for (String token : scn.buggyMethod.methodName.split(",")) {
+				if (token.trim().startsWith("MethodName")) {
+					funcName = token.split(":")[1].trim();
+					break;
+				}
+			}
             int begin = scn.buggyMethod.startLine;
             int end = scn.buggyMethod.endLine;
             String key = fileName + "$" + funcName + ":" + begin + "-" + end;
