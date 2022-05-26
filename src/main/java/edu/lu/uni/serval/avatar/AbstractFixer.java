@@ -445,7 +445,7 @@ public abstract class AbstractFixer implements IFixer {
         HashMap<String, ArrayList<JSONObject>> fileMap = new HashMap<>();
         for (String fileLine : lineMap.keySet()) {
 			SuspCodeNode scn = lineMap.get(fileLine);
-			String fileName = fileLine.split(":")[1];
+			String fileName = fileLine.split(":")[0];
             if (!fileMap.containsKey(fileName)) {
                 fileMap.put(fileName, new ArrayList<JSONObject>());
             }
