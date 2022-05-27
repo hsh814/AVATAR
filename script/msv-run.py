@@ -8,31 +8,33 @@ from time import time
 
 START_TIME = time()
 
-
+id = sys.argv[1]
 def current_time():
     return int(time()-START_TIME)
 
-def run_repair(bug_id: str):
+def run(bug_id: str):
   proj, bid = bug_id.split('-')
   bugid = f"{proj}_{bid}"
-  print(f'repair {bugid}')
+  print(f'run msv tbar {bugid}')
   start_at = time()
-  subp = subprocess.run(
-      ["./FLFix.sh", f"{bugid}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  root_path = "/root/project/AVATAR"
+  workdir = "/root/project/AVATAR/d4j/" + bugid
+  cmd = ["python3", "/root/project/MSV-search/msv-search.py", "-o", f"{root_path}/out/{bugid}-tbar-{id}", "-t", "300000", "-T", "43200", "-w", f"{workdir}", "-p", "/root/project/MSV", '-m', 'tbar',
+         '-j', '1', '--use-pass-test', '--tbar-mode', '--', 'python3', '/root/project/MSV-search/script/d4j_run_test.py', root_path]
+  subp = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   print(f'[{current_time()}] Finish run {bugid} with {subp.returncode}')
   print(f'[{current_time()}] Finish run {bugid} with {subp.returncode}', file=stderr)
   print(f"{bugid} ended in {time() - start_at}s")
-  id = bugid
   out = ''
   err = ''
   try:
       out = subp.stdout.decode('utf-8')
       err = subp.stderr.decode('utf-8')
-      with open(f'out/repair-{id}.log', 'w') as f:
+      with open(f'out/repair-{bugid}.log', 'w') as f:
           f.write('stdout: '+out)
           f.write('stderr: '+err)
   except:
-      with open(f'out/repair-{id}.log', 'w') as f:
+      with open(f'out/repair-{bugid}.log', 'w') as f:
           # f.write('stdout: '+subp.stdout)
           f.write('stderr: '+subp.stderr)
   return (subp.returncode, out, err)
@@ -55,7 +57,7 @@ time_list = ['Time-7', 'Time-18', 'Time-19']
 # 2
 mockito_list = ['Mockito-38', 'Mockito-29']
 # total 45
-lst = chart_list + closure_list + lang_list + math_list + time_list + mockito_list
+lst = lang_list #chart_list + closure_list + lang_list + math_list + time_list + mockito_list
 all = False
 print("Setup msv!")
 print(f"total {len(lst)}!")
@@ -66,7 +68,7 @@ pool = mp.Pool(processes=64)
 result = []
 # signal.signal(signal.SIGHUP,signal.SIG_IGN)
 print("start!")
-pool.map(run_repair, lst)
+pool.map(run, lst)
 pool.close()
 pool.join()
 print("exit!")
