@@ -1,17 +1,26 @@
-Chart - total 5
+# Chart - total 5
 Chart_1,27/UCUselessCondition_/1565/AbstractCategoryItemRenderer.java,27/NPAlwaysNull/1566/AbstractCategoryItemRenderer.java
 Chart_4,47/NPNullOnSomePath/1750/XYPlot.java
 Chart_11,14/DLSDeadLocalStore/354/ShapeUtilities.java
 Chart_24,1/DLSDeadLocalStore/26/GrayPaintScale.java
+Chart_26,131/NPNullOnSomePath/7657/Axis.java
 #Chart_7,0/DLSDeadLocalStore/5/TimePeriodValues.java
 #Chart_13,16/UPMUncalledPrivateMethod/866/BorderArrangement.java
 # Chart_14, 분할
 # Chart_14,0/NPNullOnSomePath/110/XYPlot.java,7/NPNullOnSomePath/846/CategoryPlot.java,14/NPNullOnSomePath/1494/XYPlot.java,20/NPNullOnSomePath/2161/CategoryPlot.java
 # Chart_19, 분할
 # Chart_19,4/NPNullOnSomePath/255/CategoryPlot.java,5/NPNullOnSomePath/358/CategoryPlot.java
-# Chart_26,131/NPNullOnSomePath/7657/Axis.java
 # Closure - total 8
 Closure_2,7/NPNullOnSomePath/287/TypeCheck.java
+# Closure_18
+# Closure_31
+Closure_38,33/UCUselessCondition_/1280/CodeConsumer.java
+Closure_46,0/UPMUncalledPrivateMethod/8/RecordType.java,0/UPMUncalledPrivateMethod/9/RecordType.java,0/UPMUncalledPrivateMethod/10/RecordType.java,0/UPMUncalledPrivateMethod/11/RecordType.java,0/UPMUncalledPrivateMethod/12/RecordType.java,0/UPMUncalledPrivateMethod/13/RecordType.java,0/UPMUncalledPrivateMethod/14/RecordType.java
+Closure_62,0/UCUselessCondition_/0/LightweightMessageFormatter.java
+Closure_63,0/UCUselessCondition_/0/LightweightMessageFormatter.java
+Closure_73,9/UCUselessCondition_/179/CodeGenerator.java
+# Closure_115
+# Closure_126
 # Lang - total 5
 Lang_6,73/DLSDeadLocalStore/1017/CharSequenceTranslator.java
 Lang_10,79/UCFUselessControlFlow/2481/FastDateParser.java

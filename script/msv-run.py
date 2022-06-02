@@ -9,22 +9,17 @@ from time import time
 START_TIME = time()
 
 id = sys.argv[1]
+sim_mode = len(sys.argv) > 2
+id_o = ""
+if sim_mode:
+  id_o = sys.argv[2]
 def current_time():
     return int(time()-START_TIME)
 
-def run(bug_id: str):
-  proj, bid = bug_id.split('-')
-  bugid = f"{proj}_{bid}"
-  print(f'run msv tbar {bugid}')
-  start_at = time()
-  root_path = "/root/project/AVATAR"
-  workdir = "/root/project/AVATAR/d4j/" + bugid
-  cmd = ["python3", "/root/project/MSV-search/msv-search.py", "-o", f"{root_path}/out/{bugid}-tbar-{id}", "-t", "300000", "-T", "43200", "-w", f"{workdir}", "-p", "/root/project/MSV", '-m', 'tbar',
-         '-j', '1', '--use-pass-test', '--tbar-mode', '--', 'python3', '/root/project/MSV-search/script/d4j_run_test.py', root_path]
+def execute(bugid: str, cmd: list) -> None:
+  print(f'run msv tbar {bugid}: {cmd}')
   subp = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   print(f'[{current_time()}] Finish run {bugid} with {subp.returncode}')
-  print(f'[{current_time()}] Finish run {bugid} with {subp.returncode}', file=stderr)
-  print(f"{bugid} ended in {time() - start_at}s")
   out = ''
   err = ''
   try:
@@ -37,7 +32,23 @@ def run(bug_id: str):
       with open(f'out/repair-{bugid}.log', 'w') as f:
           # f.write('stdout: '+subp.stdout)
           f.write('stderr: '+subp.stderr)
-  return (subp.returncode, out, err)
+
+def run(bug_id: str):
+  proj, bid = bug_id.split('-')
+  bugid = f"{proj}_{bid}"
+  print(f'run msv {bugid}')
+  start_at = time()
+  root_path = "/root/project/AVATAR"
+  workdir = "/root/project/AVATAR/d4j/" + bugid
+  cmd = ["python3", "/root/project/MSV-search/msv-search.py", "-o", f"{root_path}/out/{bugid}-tbar-{id}", "-t", "300000", "-T", "42300", "-w", f"{workdir}", "-p", root_path, '-m', 'tbar',
+        '--use-pass-test', '--tbar-mode', '--', 'python3', '/root/project/MSV-search/script/d4j_run_test.py', root_path]
+  if sim_mode:
+    # os.system(f"cp {root_path}/out/{bugid}-tbar-{id_o}/msv-result.csv {root_path}/out/{bugid}-tbar-{id_o}/msv-sim-data.csv")
+    cmd = ["python3", "/root/project/MSV-search/msv-search.py", "-o", f"{root_path}/out/{bugid}-seapr-o-{id}", "-t", "300000", "-T", "10800", "-w", f"{workdir}", "-p", root_path, '-m', 'seapr',
+           '--use-pass-test', '--tbar-mode', '--use-simulation-mode', f"{root_path}/out/{bugid}-tbar-{id_o}/msv-sim-data.csv", '--', 'python3', '/root/project/MSV-search/script/d4j_run_test.py', root_path]
+    cmd = ["python3", "/root/project/MSV-search/msv-search.py", "-o", f"{root_path}/out/{bugid}-guided-{id}", "-t", "300000", "-T", "10800", "-w", f"{workdir}", "-p", root_path, '-m', 'guided',
+          '--use-pass-test', '--tbar-mode', '--use-simulation-mode', f"{root_path}/out/{bugid}-tbar-{id_o}/msv-sim-data.csv", '--', 'python3', '/root/project/MSV-search/script/d4j_run_test.py', root_path]
+  execute(bugid, cmd)
 
 
 lst = []
