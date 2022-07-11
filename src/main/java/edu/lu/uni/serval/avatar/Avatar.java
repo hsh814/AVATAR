@@ -68,7 +68,7 @@ public class Avatar extends AbstractFixer {
             scn.flScore = suspiciousCode.flScore;
             scn.flScoreRank = rank;
             rank++;
-            if (rank > 500)
+            if (this.topFL > 0 && rank > this.topFL)
                 break;
 //			log.debug(scn.suspCodeStr);
 			if (triedSuspNode.contains(scn)) continue;

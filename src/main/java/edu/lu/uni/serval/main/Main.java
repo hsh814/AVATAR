@@ -28,7 +28,7 @@ import edu.lu.uni.serval.utils.FileHelper;
 public class Main {
 	
 	public static void main(String[] args) {
-		if (args.length != 4) {
+		if (args.length < 4) {
 			System.out.println("Arguments: <Buggy_Project_Path> <defects4j_Path> <Bug_ID> <FL_Metric>");
 			System.exit(0);
 		}
@@ -36,6 +36,7 @@ public class Main {
 		String defects4jPath = args[1]; // "../defects4j/"
 		String projectName = args[2]; // "Chart_1"
 		Configuration.faultLocalizationMetric = args[3];
+		if (args.length>=5) Configuration.topFL=Integer.valueOf(args[4]);
 		Configuration.outputPath += "FL/";
 		System.out.println(projectName);
 		fixBug(buggyProjectsPath, defects4jPath, projectName);
@@ -119,6 +120,7 @@ public class Main {
 		fixer.metric = Configuration.faultLocalizationMetric;
 		fixer.dataType = dataType;
 		fixer.suspCodePosFile = new File(suspiciousFileStr);
+		if (Configuration.topFL!=0) fixer.topFL=Configuration.topFL;
 		if (Integer.MAX_VALUE == fixer.minErrorTest) {
 			System.out.println("Failed to defects4j compile bug " + buggyProjectName);
 			return;
