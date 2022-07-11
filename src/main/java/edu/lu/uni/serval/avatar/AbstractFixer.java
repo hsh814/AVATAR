@@ -438,7 +438,26 @@ public abstract class AbstractFixer implements IFixer {
                 }
             }
         }
-        jsonObject.put("ranking", patchRanking);
+		jsonObject.put("ranking", patchRanking);
+		List<SuspiciousPosition> lsp = readSuspiciousCodeFromFile();
+		JSONArray suspiciousArr = new JSONArray();
+		String srcPath = dp.srcPath;
+		File buggyDir = new File("buggy/" + this.buggyProject);
+		srcPath = srcPath.replace(buggyDir.getAbsolutePath() + "/", "");
+		for (SuspiciousPosition sp : lsp) {
+			String suspiciousClassName = sp.classPath;
+			int buggyLine = sp.lineNumber;
+			if (suspiciousClassName.contains("$")) {
+				suspiciousClassName = suspiciousClassName.substring(0, suspiciousClassName.indexOf("$"));
+			}
+			String suspiciousJavaFile = suspiciousClassName.replace(".", "/") + ".java";
+			JSONObject suspiciousObj = new JSONObject();
+			suspiciousObj.put("file", srcPath + suspiciousJavaFile);
+			suspiciousObj.put("line", buggyLine);
+			suspiciousObj.put("score", sp.flScore);
+			suspiciousArr.put(suspiciousObj);
+		}
+		jsonObject.put("priority", suspiciousArr);
 
 		JSONArray func_locations = new JSONArray();
 		for (String filename : fileSet) {
