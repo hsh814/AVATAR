@@ -4,7 +4,7 @@
 d4jData=/root/project/AVATAR/buggy/
 
 # The path of Defects4J git repository.
-d4jPath=/root/project/defects4j/
+d4jPath=/defects4j/
 
 # The fault localization metric used to calculate suspiciousness value of each code line.
 metric=Ochiai
@@ -13,4 +13,4 @@ metric=Ochiai
 bugId=$1
 
 
-java -Xmx40g -cp "target/dependency/*" edu.lu.uni.serval.main.Main $d4jData $d4jPath $bugId $metric
+java -Xmx100g -cp "target/dependency/*" edu.lu.uni.serval.main.Main $d4jData $d4jPath $bugId $metric

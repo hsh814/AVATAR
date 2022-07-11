@@ -41,6 +41,7 @@ import org.json.JSONArray;
  *
  */
 public abstract class AbstractFixer implements IFixer {
+	public int topFL=0;
 	
 	private static Logger log = LoggerFactory.getLogger(AbstractFixer.class);
 	
