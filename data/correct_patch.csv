@@ -15,7 +15,7 @@ Closure_73,9/UCUselessCondition_/175/CodeGenerator.java
 Lang_6,98/DLSDeadLocalStore/1021/CharSequenceTranslator.java
 Lang_10,81/UCFUselessControlFlow/2403/FastDateParser.java
 Lang_57,5/DLSDeadLocalStore/37/LocaleUtils.java
-Lang_7,70/UCFUselessControlFlow/1499/NumberUtils.java
+Lang_7,45/UCFUselessControlFlow/1101/NumberUtils.java
 Math_4,7/NPNullOnSomePath/186/SubLine.java
 # Math_4,
 Math_59,1/DLSDeadLocalStore/51/FastMath.java
@@ -24,7 +24,6 @@ Math_89,0/BCUnconfirmedCast/5/Frequency.java
 # PFL 
 Closure_11,651/UCUselessCondition_/22133/TypeCheck.java
 Closure_126,6/UCFUselessControlFlow/169/MinimizeExitPoints.java
-Lang_7,45/UCFUselessControlFlow/1101/NumberUtils.java
 Math_33,22/DLSDeadLocalStore/751/SimplexTableau.java
 Math_82,62/UCUselessCondition_/1328/SimplexSolver.java
 Math_85,49/UCUselessCondition_/1029/UnivariateRealSolverUtils.java
