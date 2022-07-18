@@ -1,50 +1,33 @@
-# Chart - total 5
+# NFL
 Chart_1,34/UCUselessCondition_/1703/AbstractCategoryItemRenderer.java
 Chart_4,53/NPNullOnSomePath/2049/XYPlot.java
 Chart_11,4/DLSDeadLocalStore/85/ShapeUtilities.java
 Chart_24,2/DLSDeadLocalStore/61/GrayPaintScale.java
-Chart_26,133/NPNullOnSomePath/7711/Axis.java
-#Chart_7,0/DLSDeadLocalStore/5/TimePeriodValues.java
-#Chart_13,16/UPMUncalledPrivateMethod/866/BorderArrangement.java
-# Chart_14, 분할
-# Chart_14,0/NPNullOnSomePath/110/XYPlot.java,7/NPNullOnSomePath/846/CategoryPlot.java,14/NPNullOnSomePath/1494/XYPlot.java,20/NPNullOnSomePath/2161/CategoryPlot.java
-# Chart_19, 분할
-# Chart_19,4/NPNullOnSomePath/255/CategoryPlot.java,5/NPNullOnSomePath/358/CategoryPlot.java
-# Closure - total 8
+Chart_19,4/NPNullOnSomePath/255/CategoryPlot.java
+Chart_19,5/NPNullOnSomePath/358/CategoryPlot.java
+Closure_115,146/UCFUselessControlFlow/3303/FunctionInjector.java
 Closure_2,3/NPNullOnSomePath/75/TypeCheck.java
-# Closure_18
-# Closure_31
 Closure_38,44/UCUselessCondition_/1451/CodeConsumer.java
-Closure_46,0/UPMUncalledPrivateMethod/8/RecordType.java,0/UPMUncalledPrivateMethod/9/RecordType.java,0/UPMUncalledPrivateMethod/10/RecordType.java,0/UPMUncalledPrivateMethod/11/RecordType.java,0/UPMUncalledPrivateMethod/12/RecordType.java,0/UPMUncalledPrivateMethod/13/RecordType.java,0/UPMUncalledPrivateMethod/14/RecordType.java
+Closure_46,0/UPMUncalledPrivateMethod/10/RecordType.java,0/UPMUncalledPrivateMethod/11/RecordType.java,0/UPMUncalledPrivateMethod/12/RecordType.java,0/UPMUncalledPrivateMethod/13/RecordType.java,0/UPMUncalledPrivateMethod/14/RecordType.java
 Closure_62,3/UCUselessCondition_/69/LightweightMessageFormatter.java
 Closure_63,3/UCUselessCondition_/69/LightweightMessageFormatter.java
 Closure_73,9/UCUselessCondition_/175/CodeGenerator.java
-# Closure_115
-# Closure_126
-# Lang - total 5
 Lang_6,98/DLSDeadLocalStore/1021/CharSequenceTranslator.java
 Lang_10,81/UCFUselessControlFlow/2403/FastDateParser.java
 Lang_57,5/DLSDeadLocalStore/37/LocaleUtils.java
-Lang_59,5/DLSDeadLocalStore/176/StrBuilder.java
-# Lang_51, no correct patch
-# Lang_7, partial
-# Lang_7,70/UCFUselessControlFlow/1499/NumberUtils.java
-# Lang_63, not correct
-# Lang_63,0/DLSDeadLocalStore/1/DurationFormatUtils.java
-# Math - total 6
-# Mockito - total 2
-# Time - total 1
+Lang_7,70/UCFUselessControlFlow/1499/NumberUtils.java
+Math_4,7/NPNullOnSomePath/186/SubLine.java
+# Math_4,
+Math_59,1/DLSDeadLocalStore/51/FastMath.java
+Math_89,0/BCUnconfirmedCast/5/Frequency.java
 
 # PFL 
-Closure_11,651/NPAlwaysNull/22137/TypeCheck.java,651/UCUselessCondition_/22133/TypeCheck.java
-Closure_115,146/UCFUselessControlFlow/3303/FunctionInjector.java
+Closure_11,651/UCUselessCondition_/22133/TypeCheck.java
 Closure_126,6/UCFUselessControlFlow/169/MinimizeExitPoints.java
 Lang_7,45/UCFUselessControlFlow/1101/NumberUtils.java
 Math_33,22/DLSDeadLocalStore/751/SimplexTableau.java
-Math_59,1/DLSDeadLocalStore/51/FastMath.java
 Math_82,62/UCUselessCondition_/1328/SimplexSolver.java
 Math_85,49/UCUselessCondition_/1029/UnivariateRealSolverUtils.java
-Math_89,0/BCUnconfirmedCast/5/Frequency.java
 Mockito_29,5/NPNullOnSomePath/99/Same.java
 Mockito_38,0/NPNullOnSomePath/9/ArgumentMatchingTool.java
 Time_7,326/DLSDeadLocalStore/6120/DateTimeFormatter.java
