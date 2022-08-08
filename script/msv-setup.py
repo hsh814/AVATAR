@@ -22,6 +22,8 @@ def run_repair(bug_id: str):
   print(f'[{current_time()}] Finish run {bugid} with {subp.returncode}')
   print(f'[{current_time()}] Finish run {bugid} with {subp.returncode}', file=stderr)
   print(f"{bugid} ended in {time() - start_at}s")
+  with open("avatar-time-new.csv", "a") as f:
+    f.write(f"{bugid},{time() - start_at}\n")
   id = bugid
   out = ''
   err = ''
@@ -57,6 +59,7 @@ mockito_list = ['Mockito-38', 'Mockito-29']
 # total 45
 lst = chart_list + closure_list + lang_list + math_list + time_list + mockito_list
 all = False
+lst = ["Closure-68", "Closure-2", "Closure-31", "Closure-18", "Closure-22", "Closure-115", "Closure-126", "Closure-45", "Closure-21", "Closure-73", "Closure-38", ]
 print("Setup msv!")
 print(f"total {len(lst)}!")
 # repair
