@@ -2,6 +2,7 @@ package edu.lu.uni.serval.avatar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Calendar;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,12 +75,12 @@ public class Avatar extends AbstractFixer {
 			if (triedSuspNode.contains(scn)) continue;
 			triedSuspNode.add(scn);
 	        // Match fix templates for this suspicious code with its context information.
+			long startTime=Calendar.getInstance().getTimeInMillis();
 	        fixWithMatchedFixTemplates(scn);
-	        
+			log.info("Generation time: "+Long.toString((Calendar.getInstance().getTimeInMillis()-startTime)/1000));	        
 			if (minErrorTest == 0) break;
         }
 		log.info("=======StaticBugFixer: Finish off fixing======");
-		
 		FileHelper.deleteDirectory(Configuration.TEMP_FILES_PATH + this.dataType + "/" + this.buggyProject);
 	}
 	
