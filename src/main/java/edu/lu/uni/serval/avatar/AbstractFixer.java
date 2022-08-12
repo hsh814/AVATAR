@@ -239,7 +239,7 @@ public abstract class AbstractFixer implements IFixer {
         return scn;
 	}
 
-	protected List<Patch> triedPatchCandidates = new ArrayList<>();
+	// protected List<Patch> triedPatchCandidates = new ArrayList<>();
 	
     protected void testGeneratedPatches(List<Patch> patchCandidates, SuspCodeNode scn) {
 		String full = scn.targetJavaFile.getAbsolutePath();
@@ -262,7 +262,7 @@ public abstract class AbstractFixer implements IFixer {
         }
         ArrayList<JSONObject> lineInfo = fileInfo.get(scn.buggyLine);
 
-        String mutation = patchCandidates.get(0).mutation;
+        String mutation = patchCandidates.get(0).mutation + "";
         String patchDir = "d4j/" + scn.projectId + "/";
 		String tmpFileName = scn.flScoreRank + "/" + mutation + "/";
 		File patchList = new File(patchDir + "patch.list");
@@ -270,8 +270,8 @@ public abstract class AbstractFixer implements IFixer {
         // Testing generated patches.
         for (Patch patch : patchCandidates) {
             patch.buggyFileName = scn.suspiciousJavaFile;
-            if (this.triedPatchCandidates.contains(patch))
-                continue;
+            // if (this.triedPatchCandidates.contains(patch))
+            //     continue;
             patch.patchId = patchId;
             patchId++;
             String patchLoc = patchDir + tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName();
@@ -282,11 +282,11 @@ public abstract class AbstractFixer implements IFixer {
                 continue;
             JSONObject jo = new JSONObject();
 			String location = tmpFileName + patch.patchId + "/" + scn.targetJavaFile.getName();
-            jo.put("patch_id", patch.patchId);
+            jo.put("patch_id", patchId);
             // jo.put("buggy_code", patch.getBuggyCodeStr());
             // jo.put("patch_code", patch.getFixedCodeStr1());
             jo.put("location", location);
-            jo.put("mutation", patch.mutation);
+            jo.put("mutation", mutation);
             lineInfo.add(jo);
 			patchRanking.put(location);
 			String startStr = "\n========START========\n";
@@ -399,7 +399,6 @@ public abstract class AbstractFixer implements IFixer {
             }
             */
         }
-
         // try {
         //     scn.targetJavaFile.delete();
         //     scn.targetClassFile.delete();

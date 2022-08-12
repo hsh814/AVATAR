@@ -49,7 +49,7 @@ public class EQDoesNotOverrideEquals extends FixTemplate {
 		
 		for (List<String> selectedFields : selectedFieldsList) {
 			StringBuilder fixedCodeStr1 = generatedComparingCode(selectedFields);
-			fixedCode.append(fixedCodeStr1);
+			String fc = fixedCode.toString() + fixedCodeStr1.toString(); // append(fixedCodeStr1);
 			this.generatePatch(0, fixedCode.toString() + "        return true;\n    }");
 			this.generatePatch(0, fixedCode.toString() + "        return super.equals(obj);\n    }");
 		}

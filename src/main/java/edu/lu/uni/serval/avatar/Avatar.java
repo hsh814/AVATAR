@@ -194,6 +194,7 @@ public class Avatar extends AbstractFixer {
 		// Test generated patches.
 		if (patchCandidates.isEmpty()) return;
 		testGeneratedPatches(patchCandidates, scn);
+		ft.clearPatches();
 	}
 
 	private List<Integer> readAllNodeTypes(ITree suspCodeAstNode) {

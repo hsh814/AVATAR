@@ -98,6 +98,11 @@ public abstract class FixTemplate implements IFixTemplate {
 	public List<Patch> getPatches() {
 		return patchesList;
 	}
+
+	public void clearPatches() {
+		patchesList.clear();
+		// patchesList = null;
+	}
 	
 	@Override
 	public String getSubSuspiciouCodeStr(int startPos, int endPos) {
