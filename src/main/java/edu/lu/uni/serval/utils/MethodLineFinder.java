@@ -21,7 +21,6 @@ import edu.lu.uni.serval.utils.FileUtils;
  * 
  * It will build a AST and find each line number by traversing AST.
  * </p>
- * @author Youngjae Kim
  */
 public class MethodLineFinder extends ASTVisitor{
     /**
