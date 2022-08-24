@@ -4,7 +4,6 @@ import os
 import sys
 from sys import stderr
 from time import time
-# import signal
 
 START_TIME = time()
 
@@ -35,7 +34,6 @@ def run_repair(bug_id: str):
           f.write('stderr: '+err)
   except:
       with open(f'out/repair-{id}.log', 'w') as f:
-          # f.write('stdout: '+subp.stdout)
           f.write('stderr: '+subp.stderr)
   return (subp.returncode, out, err)
 
@@ -67,7 +65,6 @@ if not os.path.exists('out'):
   os.mkdir("out")
 pool = mp.Pool(processes=64)
 result = []
-# signal.signal(signal.SIGHUP,signal.SIG_IGN)
 print("start!")
 pool.map(run_repair, lst)
 pool.close()

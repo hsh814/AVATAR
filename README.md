@@ -42,3 +42,16 @@ I. Requirement
   
 5. Fix bugs with normal fault localization, which means that AVATAR directly uses off-the-shelf fault localization techniques (such as GZoltar + Ochiai) to localize the faulty code positions.
   - `./FLFix.sh <BugID>`
+
+
+III. Run Casino
+----------------
+ 1. Run `script/casino-setup.py` for patch candidate generation.
+ ```
+ python3 script/casino-setup.py
+ ```
+
+ 2. Run `script/casino-run.py` for run Casino.
+ ```
+ python3 script/casino-run.py
+ ```

@@ -17,7 +17,7 @@ def current_time():
     return int(time()-START_TIME)
 
 def execute(bugid: str, cmd: list) -> None:
-  print(f'run msv tbar {bugid}: {cmd}')
+  print(f'run casino tbar {bugid}: {cmd}')
   subp = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   print(f'[{current_time()}] Finish run {bugid} with {subp.returncode}')
   out = ''
@@ -36,18 +36,18 @@ def execute(bugid: str, cmd: list) -> None:
 def run(bug_id: str):
   proj, bid = bug_id.split('-')
   bugid = f"{proj}_{bid}"
-  print(f'run msv {bugid}')
+  print(f'run casino {bugid}')
   start_at = time()
   root_path = "/root/project/AVATAR"
   workdir = "/root/project/AVATAR/d4j/" + bugid
-  cmd = ["python3", "/root/project/MSV-search/msv-search.py", "-o", f"{root_path}/out/{bugid}-tbar-{id}", "-t", "300000", "-T", "42300", "-w", f"{workdir}", "-p", root_path, '-m', 'tbar',
-        '--use-pass-test', '--tbar-mode', '--', 'python3', '/root/project/MSV-search/script/d4j_run_test.py', root_path]
+  cmd = ["python3", "/root/project/casino/casino.py", "-o", f"{root_path}/out/{bugid}-tbar-{id}", "-t", "300000", "-T", "42300", "-w", f"{workdir}", "-p", root_path, '-m', 'tbar',
+        '--use-pass-test', '--tbar-mode', '--', 'python3', '/root/project/casino/script/d4j_run_test.py', root_path]
   if sim_mode:
     # os.system(f"cp {root_path}/out/{bugid}-tbar-{id_o}/msv-result.csv {root_path}/out/{bugid}-tbar-{id_o}/msv-sim-data.csv")
-    cmd = ["python3", "/root/project/MSV-search/msv-search.py", "-o", f"{root_path}/out/{bugid}-seapr-o-{id}", "-t", "300000", "-T", "10800", "-w", f"{workdir}", "-p", root_path, '-m', 'seapr',
-           '--use-pass-test', '--tbar-mode', '--use-simulation-mode', f"{root_path}/out/{bugid}-tbar-{id_o}/msv-sim-data.csv", '--', 'python3', '/root/project/MSV-search/script/d4j_run_test.py', root_path]
-    cmd = ["python3", "/root/project/MSV-search/msv-search.py", "-o", f"{root_path}/out/{bugid}-guided-{id}", "-t", "300000", "-T", "10800", "-w", f"{workdir}", "-p", root_path, '-m', 'guided',
-          '--use-pass-test', '--tbar-mode', '--use-simulation-mode', f"{root_path}/out/{bugid}-tbar-{id_o}/msv-sim-data.csv", '--', 'python3', '/root/project/MSV-search/script/d4j_run_test.py', root_path]
+    cmd = ["python3", "/root/project/casino/casino.py", "-o", f"{root_path}/out/{bugid}-seapr-o-{id}", "-t", "300000", "-T", "10800", "-w", f"{workdir}", "-p", root_path, '-m', 'seapr',
+           '--use-pass-test', '--tbar-mode', '--use-simulation-mode', f"{root_path}/out/{bugid}-tbar-{id_o}/msv-sim-data.csv", '--', 'python3', '/root/project/casino/script/d4j_run_test.py', root_path]
+    cmd = ["python3", "/root/project/casino/casino.py", "-o", f"{root_path}/out/{bugid}-guided-{id}", "-t", "300000", "-T", "10800", "-w", f"{workdir}", "-p", root_path, '-m', 'guided',
+          '--use-pass-test', '--tbar-mode', '--use-simulation-mode', f"{root_path}/out/{bugid}-tbar-{id_o}/msv-sim-data.csv", '--', 'python3', '/root/project/casino/script/d4j_run_test.py', root_path]
   execute(bugid, cmd)
 
 
@@ -70,7 +70,7 @@ mockito_list = ['Mockito-38', 'Mockito-29']
 # total 45
 lst = lang_list #chart_list + closure_list + lang_list + math_list + time_list + mockito_list
 all = False
-print("Setup msv!")
+print("Setup casino!")
 print(f"total {len(lst)}!")
 # repair
 if not os.path.exists('out'):
