@@ -44,11 +44,14 @@ public class EQDoesNotOverrideEquals extends FixTemplate {
 		String[] fieldNamesArray = new String[fieldNames.size()];
 		fieldNamesArray = fieldNames.toArray(fieldNamesArray);
 		for (int i = 0, size = fieldNamesArray.length; i < size; i ++) {
+			if (size > 10) break;
 			combinations2(fieldNamesArray, size - i, 0, new String[size - i]);
 		}
 		
 		for (List<String> selectedFields : selectedFieldsList) {
 			StringBuilder fixedCodeStr1 = generatedComparingCode(selectedFields);
+			if (fixedCodeStr1.length() + fixedCode.length() > 16384) break;
+			if (fixedCode.indexOf(fixedCodeStr1.toString()) != -1) continue;
 			String fc = fixedCode.toString() + fixedCodeStr1.toString(); // append(fixedCodeStr1);
 			this.generatePatch(0, fixedCode.toString() + "        return true;\n    }");
 			this.generatePatch(0, fixedCode.toString() + "        return super.equals(obj);\n    }");
@@ -56,7 +59,7 @@ public class EQDoesNotOverrideEquals extends FixTemplate {
 	}
 	
 	private void combinations2(String[] arr, int len, int startPosition, String[] result){
-        if (len == 0){
+        if (len <= 0){
         	List<String> fieldsList = new ArrayList<String>(result.length);
         	fieldsList.addAll(Arrays.asList(result));
         	selectedFieldsList.add(fieldsList);
